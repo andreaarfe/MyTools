@@ -9,8 +9,8 @@ find_feasible_designs(
   p1,
   alpha,
   power,
-  n_max,
-  n1_min = 5L,
+  n_max = 50L,
+  n1_min = 1L,
   irrevocable = FALSE,
   simon = FALSE
 )
@@ -24,9 +24,9 @@ find_feasible_designs(
 
 \item{power}{Numeric in (0, 1). Minimum required power.}
 
-\item{n_max}{Integer. Maximum total sample size to consider.}
+\item{n_max}{Integer. Maximum total sample size to consider (default 50).}
 
-\item{n1_min}{Integer. Minimum stage-1 sample size (default 5).}
+\item{n1_min}{Integer. Minimum stage-1 sample size (default 1).}
 
 \item{irrevocable}{Logical. If \code{TRUE}, restrict to designs where \code{e1 >= r},
 guaranteeing that an interim efficacy declaration cannot be overturned at
