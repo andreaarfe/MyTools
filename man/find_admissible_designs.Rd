@@ -7,12 +7,12 @@
 find_admissible_designs(designs)
 }
 \arguments{
-\item{designs}{A `data.frame` as returned by [find_feasible_designs()],
-containing at least columns `n`, `en_null`, and `en_alt`.}
+\item{designs}{A \code{data.frame} as returned by \code{\link{find_feasible_designs}},
+containing at least columns \code{n}, \code{en_null}, and \code{en_alt}.}
 }
 \value{
-A `data.frame` of admissible designs sorted by `n` descending.
-  Returns `designs` unchanged (empty) when the input has zero rows.
+A \code{data.frame} of admissible designs sorted by \code{n} descending.
+Returns \code{designs} unchanged (empty) when the input has zero rows.
 }
 \examples{
 feasible <- find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05,
@@ -21,8 +21,8 @@ find_admissible_designs(feasible)
 }
 \description{
 Retains only admissible (Pareto-optimal) designs with respect to three
-criteria: maximum sample size (`n`), expected sample size under the null
-(`en_null`), and expected sample size under the alternative (`en_alt`).
+criteria: maximum sample size (\code{n}), expected sample size under the null
+(\code{en_null}), and expected sample size under the alternative (\code{en_alt}).
 A design is admissible if no other design is weakly better on all three
 axes with at least one strict improvement.
 }

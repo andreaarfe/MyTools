@@ -28,24 +28,24 @@ find_feasible_designs(
 
 \item{n1_min}{Integer. Minimum stage-1 sample size (default 5).}
 
-\item{irrevocable}{Logical. If `TRUE`, restrict to designs where `e1 >= r`,
+\item{irrevocable}{Logical. If \code{TRUE}, restrict to designs where \code{e1 >= r},
 guaranteeing that an interim efficacy declaration cannot be overturned at
-the final analysis. Use `TRUE` when the interim efficacy stopping rule is
-\strong{non-binding} (the trial may continue to stage 2 even after
-`X1 >= e1`), so that the final decision remains coherent with the interim
-declaration. Default `FALSE`.}
+the final analysis. Use \code{TRUE} when the interim efficacy stopping rule is
+\strong{non-binding} (the trial may continue to stage 2 even after \code{X1 >= e1}),
+so that the final decision remains coherent with the interim declaration.
+Default \code{FALSE}.}
 
-\item{simon}{Logical. If `TRUE`, restrict to Simon two-stage designs,
-i.e. designs with no interim stopping for efficacy (`e1 = n1 + 1`).
-Default `FALSE`. When `simon = TRUE` the `irrevocable` argument has no
+\item{simon}{Logical. If \code{TRUE}, restrict to Simon two-stage designs,
+i.e. designs with no interim stopping for efficacy (\code{e1 = n1 + 1}).
+Default \code{FALSE}. When \code{simon = TRUE} the \code{irrevocable} argument has no
 effect: because there is no interim efficacy declaration, the
-irrevocability constraint is vacuously satisfied regardless of `r`.}
+irrevocability constraint is vacuously satisfied regardless of \code{r}.}
 }
 \value{
-A `data.frame` with one row per feasible design and columns
-  `n`, `n1`, `n2`, `r1`, `e1`, `r`, `alpha_actual`, `power_actual`,
-  `en_null`, `en_alt`, `is_irrevocable`.
-  Returns an empty `data.frame` (with a message) when no designs are found.
+A \code{data.frame} with one row per feasible design and columns
+\code{n}, \code{n1}, \code{n2}, \code{r1}, \code{e1}, \code{r}, \code{alpha_actual}, \code{power_actual},
+\code{en_null}, \code{en_alt}, \code{is_irrevocable}.
+Returns an empty \code{data.frame} (with a message) when no designs are found.
 }
 \examples{
 find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
@@ -53,13 +53,15 @@ find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
 }
 \description{
 Exhaustively searches over all combinations of (n, n1, r, e1, r1) with
-total sample size up to `n_max` and returns designs that satisfy the type I
+total sample size up to \code{n_max} and returns designs that satisfy the type I
 error and power constraints.
 }
 \details{
 A design is feasible when:
-- `alpha_actual <= alpha`
-- `power_actual >= power`
-- `r1 < e1` (non-trivial continuation region)
-- `e1 >= r` (irrevocability, enforced only when `irrevocable = TRUE`)
+\itemize{
+\item \code{alpha_actual <= alpha}
+\item \code{power_actual >= power}
+\item \code{r1 < e1} (non-trivial continuation region)
+\item \code{e1 >= r} (irrevocability, enforced only when \code{irrevocable = TRUE})
+}
 }
