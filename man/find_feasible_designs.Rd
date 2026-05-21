@@ -4,7 +4,15 @@
 \alias{find_feasible_designs}
 \title{Enumerate all feasible two-stage designs}
 \usage{
-find_feasible_designs(p0, p1, alpha, power, n_max, n1_min = 5L)
+find_feasible_designs(
+  p0,
+  p1,
+  alpha,
+  power,
+  n_max,
+  n1_min = 5L,
+  irrevocable = TRUE
+)
 }
 \arguments{
 \item{p0}{Numeric in (0, 1). Null response rate.}
@@ -18,6 +26,11 @@ find_feasible_designs(p0, p1, alpha, power, n_max, n1_min = 5L)
 \item{n_max}{Integer. Maximum total sample size to consider.}
 
 \item{n1_min}{Integer. Minimum stage-1 sample size (default 5).}
+
+\item{irrevocable}{Logical. If `TRUE` (default), restrict to designs where
+`e1 >= r`, guaranteeing that an interim efficacy declaration cannot be
+overturned at the final analysis. Set to `FALSE` to include designs
+without this constraint.}
 }
 \value{
 A `data.frame` with one row per feasible design and columns
@@ -28,12 +41,12 @@ A `data.frame` with one row per feasible design and columns
 \description{
 Exhaustively searches over all combinations of (n, n1, r, e1, r1) with
 total sample size up to `n_max` and returns designs that satisfy the type I
-error, power, and irrevocability constraints.
+error and power constraints.
 }
 \details{
 A design is feasible when:
 - `alpha_actual <= alpha`
 - `power_actual >= power`
-- `e1 >= r` (irrevocability)
 - `r1 < e1` (non-trivial continuation region)
+- `e1 >= r` (irrevocability, enforced only when `irrevocable = TRUE`)
 }

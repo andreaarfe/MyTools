@@ -2,21 +2,22 @@
 % Please edit documentation in R/admissibility.R
 \name{find_admissible_designs}
 \alias{find_admissible_designs}
-\title{Filter designs to the Pareto frontier on expected sample sizes}
+\title{Filter designs to the Pareto frontier on sample size and expected sample sizes}
 \usage{
 find_admissible_designs(designs)
 }
 \arguments{
 \item{designs}{A `data.frame` as returned by [find_feasible_designs()],
-containing at least columns `en_null` and `en_alt`.}
+containing at least columns `n`, `en_null`, and `en_alt`.}
 }
 \value{
 A `data.frame` of admissible designs sorted by `en_null` ascending.
   Returns `designs` unchanged (empty) when the input has zero rows.
 }
 \description{
-Retains only admissible (Pareto-optimal) designs with respect to expected
-sample size under the null (`en_null`) and alternative (`en_alt`).
-A design is admissible if no other design is weakly better on both axes
-with at least one strict improvement.
+Retains only admissible (Pareto-optimal) designs with respect to three
+criteria: maximum sample size (`n`), expected sample size under the null
+(`en_null`), and expected sample size under the alternative (`en_alt`).
+A design is admissible if no other design is weakly better on all three
+axes with at least one strict improvement.
 }
