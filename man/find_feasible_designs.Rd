@@ -43,7 +43,7 @@ irrevocability constraint is vacuously satisfied regardless of `r`.}
 }
 \value{
 A `data.frame` with one row per feasible design and columns
-  `n1`, `n`, `n2`, `r1`, `e1`, `r`, `p0`, `p1`, `alpha_actual`,
+  `n`, `n1`, `n2`, `r1`, `e1`, `r`, `p0`, `p1`, `alpha_actual`,
   `power_actual`, `en_null`, `en_alt`, `is_irrevocable`.
   Returns an empty `data.frame` (with a message) when no designs are found.
 }

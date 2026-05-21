@@ -11,7 +11,7 @@ find_admissible_designs(designs)
 containing at least columns `n`, `en_null`, and `en_alt`.}
 }
 \value{
-A `data.frame` of admissible designs sorted by `en_null` ascending.
+A `data.frame` of admissible designs sorted by `n` descending.
   Returns `designs` unchanged (empty) when the input has zero rows.
 }
 \examples{

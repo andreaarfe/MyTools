@@ -9,7 +9,7 @@
 #' @param designs A `data.frame` as returned by [find_feasible_designs()],
 #'   containing at least columns `n`, `en_null`, and `en_alt`.
 #'
-#' @return A `data.frame` of admissible designs sorted by `en_null` ascending.
+#' @return A `data.frame` of admissible designs sorted by `n` descending.
 #'   Returns `designs` unchanged (empty) when the input has zero rows.
 #' @examples
 #' feasible <- find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05,
@@ -23,5 +23,6 @@ find_admissible_designs <- function(designs) {
                                       as.numeric(designs$en_null),
                                       as.numeric(designs$en_alt))
   kept <- designs[keep, , drop = FALSE]
-  kept[order(kept$en_null), , drop = FALSE]
+  rownames(kept) <- NULL
+  kept[order(kept$n, decreasing = TRUE), , drop = FALSE]
 }
