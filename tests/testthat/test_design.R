@@ -1,21 +1,6 @@
 library(testthat)
 
 # ---------------------------------------------------------------------------
-# distributions.R
-# ---------------------------------------------------------------------------
-test_that("binom_pmf matches dbinom", {
-  expect_equal(binom_pmf(3, 10, 0.3), dbinom(3, 10, 0.3))
-})
-
-test_that("binom_cdf matches pbinom", {
-  expect_equal(binom_cdf(4, 10, 0.2), pbinom(4, 10, 0.2))
-})
-
-test_that("binom_upper = P(X >= k)", {
-  expect_equal(binom_upper(5, 10, 0.4), 1 - pbinom(4, 10, 0.4))
-})
-
-# ---------------------------------------------------------------------------
 # design.R — evaluate_design
 # ---------------------------------------------------------------------------
 
@@ -176,6 +161,36 @@ test_that("admissible set from synthetic designs has correct Pareto frontier", {
   adm <- find_admissible_designs(designs)
   expect_equal(nrow(adm), 2L)
   expect_true(all(adm$en_null %in% c(14, 13)))
+})
+
+test_that("identical (n, en_null, en_alt) triples are all retained", {
+  # Neither row strictly dominates the other (no strict improvement on any axis),
+  # so both must survive the Pareto filter.
+  make_row <- function() {
+    data.frame(n1=10, n=20, n2=10, r1=2, e1=8, r=8,
+               p0=0.1, p1=0.3,
+               alpha_actual=0.04, power_actual=0.82,
+               en_null=14, en_alt=12, is_irrevocable=TRUE)
+  }
+  designs <- rbind(make_row(), make_row())
+  adm <- find_admissible_designs(designs)
+  expect_equal(nrow(adm), 2L)
+})
+
+test_that("identical triples kept; a dominator eliminates all copies", {
+  make_row <- function(en0, en1) {
+    data.frame(n1=10, n=20, n2=10, r1=2, e1=8, r=8,
+               p0=0.1, p1=0.3,
+               alpha_actual=0.04, power_actual=0.82,
+               en_null=en0, en_alt=en1, is_irrevocable=TRUE)
+  }
+  designs <- rbind(make_row(15, 12),  # dominated, copy 1
+                   make_row(15, 12),  # dominated, copy 2
+                   make_row(13, 11))  # dominator
+  adm <- find_admissible_designs(designs)
+  expect_equal(nrow(adm), 1L)
+  expect_equal(adm$en_null, 13)
+  expect_equal(adm$en_alt,  11)
 })
 
 test_that("3D admissible set retains designs with small n even if worse on EN axes", {

@@ -1,11 +1,29 @@
 #include <Rcpp.h>
 #include <vector>
+#include <algorithm>
+#include <map>
 using namespace Rcpp;
 
-// Compute operating characteristics for one (n1, n, r1, e1, r, p0, p1).
-// Helper: returns (p_success, en) for a single response rate p.
+// Build surv[k] = P(Binomial(n2, p) >= k), for k = 0..n2+1.
+// Entries:
+//   surv[0]    = 1.0
+//   surv[k]    = R::pbinom(k - 1, n2, p, FALSE, FALSE)  for k = 1..n2
+//   surv[n2+1] = 0.0
+// Caller can clamp the "need" index into [0, n2+1] to handle boundary cases
+// (need <= 0 -> 1.0, need > n2 -> 0.0) without any branching inside hot loops.
+static inline void build_surv(int n2, double p, std::vector<double>& surv) {
+  surv.assign(n2 + 2, 0.0);
+  surv[0] = 1.0;
+  for (int k = 1; k <= n2; ++k) {
+    surv[k] = R::pbinom(k - 1, n2, p, /*lower_tail=*/0, /*log=*/0);
+  }
+}
+
+// Compute operating characteristics for one (n1, n, r1, e1, r, p).
+// Returns (p_success, en) given precomputed pmf_x1 and surv_x2.
 static inline void oc_single(int n1, int n2, int r1, int e1, int r,
-                             double p, const std::vector<double>& pmf_x1,
+                             const std::vector<double>& pmf_x1,
+                             const std::vector<double>& surv_x2,
                              double& out_p_success, double& out_en) {
   // P(interim efficacy): X1 in {e1, ..., n1}
   double p_eff1 = 0.0;
@@ -22,18 +40,11 @@ static inline void oc_single(int n1, int n2, int r1, int e1, int r,
   // Stage-2 success contribution: X1 in {r1+1, ..., e1-1}
   double p_success_2 = 0.0;
   if (r1 + 1 <= e1 - 1) {
+    const int hi = n2 + 1;
     for (int x1 = r1 + 1; x1 <= e1 - 1; ++x1) {
       int need = r - x1;
-      double p_x2;
-      if (need <= 0) {
-        p_x2 = 1.0;
-      } else if (need > n2) {
-        p_x2 = 0.0;
-      } else {
-        // P(X2 >= need) = pbinom(need - 1, n2, p, lower.tail = FALSE)
-        p_x2 = R::pbinom(need - 1, n2, p, /*lower_tail=*/0, /*log=*/0);
-      }
-      p_success_2 += pmf_x1[x1] * p_x2;
+      int idx = need < 0 ? 0 : (need > hi ? hi : need);
+      p_success_2 += pmf_x1[x1] * surv_x2[idx];
     }
   }
 
@@ -53,9 +64,13 @@ List evaluate_design_cpp(int n1, int n, int r1, int e1, int r,
     pmf1[k] = R::dbinom(k, n1, p1, /*log=*/0);
   }
 
+  std::vector<double> surv0, surv1;
+  build_surv(n2, p0, surv0);
+  build_surv(n2, p1, surv1);
+
   double alpha_actual, en_null, power_actual, en_alt;
-  oc_single(n1, n2, r1, e1, r, p0, pmf0, alpha_actual, en_null);
-  oc_single(n1, n2, r1, e1, r, p1, pmf1, power_actual, en_alt);
+  oc_single(n1, n2, r1, e1, r, pmf0, surv0, alpha_actual, en_null);
+  oc_single(n1, n2, r1, e1, r, pmf1, surv1, power_actual, en_alt);
 
   return List::create(
     _["n1"]             = n1,
@@ -87,6 +102,11 @@ DataFrame find_feasible_designs_cpp(double p0, double p1,
   std::vector<double> pmf0(n_max + 1), pmf1(n_max + 1);
   int cached_n1 = -1;
 
+  // Reusable survival buffers for X2 ~ Binomial(n2, p). Rebuilt at each
+  // (n, n1) since n2 = n - n1 changes with both. This hoists the R::pbinom
+  // calls out of the innermost loop over r/e1/r1/x1.
+  std::vector<double> surv0, surv1;
+
   for (int n = n1_min + 1; n <= n_max; ++n) {
     for (int n1 = n1_min; n1 <= n - 1; ++n1) {
       int n2 = n - n1;
@@ -100,6 +120,10 @@ DataFrame find_feasible_designs_cpp(double p0, double p1,
         cached_n1 = n1;
       }
 
+      // Cache survival of X2 ~ Binomial(n2, p) for both p0 and p1.
+      build_surv(n2, p0, surv0);
+      build_surv(n2, p1, surv1);
+
       for (int r = 0; r <= n; ++r) {
         if (r == 0) continue;
         if (!simon && irrevocable && r > n1) continue;
@@ -108,9 +132,9 @@ DataFrame find_feasible_designs_cpp(double p0, double p1,
         for (int e1 = e1_min; e1 <= n1 + 1; ++e1) {
           for (int r1 = -1; r1 <= e1 - 1; ++r1) {
             double alpha_actual, en_null, power_actual, en_alt;
-            oc_single(n1, n2, r1, e1, r, p0, pmf0, alpha_actual, en_null);
+            oc_single(n1, n2, r1, e1, r, pmf0, surv0, alpha_actual, en_null);
             if (alpha_actual > alpha) continue;
-            oc_single(n1, n2, r1, e1, r, p1, pmf1, power_actual, en_alt);
+            oc_single(n1, n2, r1, e1, r, pmf1, surv1, power_actual, en_alt);
             if (power_actual < power) continue;
 
             out_n1.push_back(n1);
@@ -159,25 +183,68 @@ DataFrame find_feasible_designs_cpp(double p0, double p1,
 }
 
 // 3D Pareto check on (n, en_null, en_alt). Returns logical keep-mask.
+//
+// Sort-then-sweep: sort by (n, en_null, en_alt) ascending and walk the points
+// in lex order, querying a 2D staircase of (en_null, en_alt) over previously
+// seen points. Rows with identical (n, en_null, en_alt) form a run that all
+// survive together (none dominates the others, since strict-in-at-least-one
+// requires a difference). Total work O(m log m).
 // [[Rcpp::export]]
 LogicalVector find_admissible_designs_cpp(IntegerVector n,
                                           NumericVector en_null,
                                           NumericVector en_alt) {
   int m = n.size();
-  LogicalVector keep(m, true);
+  LogicalVector keep(m, false);
+  if (m == 0) return keep;
 
-  for (int i = 0; i < m; ++i) {
-    if (!keep[i]) continue;
-    int ni = n[i];
-    double e0i = en_null[i], e1i = en_alt[i];
-    for (int j = 0; j < m; ++j) {
-      if (j == i || !keep[j]) continue;
-      if (n[j] <= ni && en_null[j] <= e0i && en_alt[j] <= e1i &&
-          (n[j] < ni || en_null[j] < e0i || en_alt[j] < e1i)) {
-        keep[i] = false;
-        break;
-      }
+  std::vector<int> order(m);
+  for (int i = 0; i < m; ++i) order[i] = i;
+  std::sort(order.begin(), order.end(),
+            [&](int a, int b) {
+              if (n[a] != n[b]) return n[a] < n[b];
+              if (en_null[a] != en_null[b]) return en_null[a] < en_null[b];
+              return en_alt[a] < en_alt[b];
+            });
+
+  // Staircase: en_null -> min en_alt seen at that key, invariant that as
+  // en_null increases along entries, en_alt strictly decreases.
+  std::map<double, double> stair;
+
+  int i = 0;
+  while (i < m) {
+    int j = i;
+    int idx0 = order[i];
+    int n0 = n[idx0];
+    double e0 = en_null[idx0], e1 = en_alt[idx0];
+    while (j < m
+           && n[order[j]] == n0
+           && en_null[order[j]] == e0
+           && en_alt[order[j]] == e1) {
+      ++j;
     }
+
+    // Dominator query: any staircase entry (k, v) with k <= e0 AND v <= e1?
+    bool dominated = false;
+    auto it = stair.upper_bound(e0);
+    if (it != stair.begin()) {
+      --it;
+      if (it->second <= e1) dominated = true;
+    }
+
+    if (!dominated) {
+      for (int k = i; k < j; ++k) keep[order[k]] = true;
+
+      // Insert (e0, e1): remove any (k, v) with k >= e0 AND v >= e1
+      // (they are 2D-dominated by the new entry and cannot help future
+      // queries that this entry wouldn't already satisfy).
+      auto lb = stair.lower_bound(e0);
+      while (lb != stair.end() && lb->second >= e1) {
+        lb = stair.erase(lb);
+      }
+      stair[e0] = e1;
+    }
+
+    i = j;
   }
   return keep;
 }

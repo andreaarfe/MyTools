@@ -70,7 +70,16 @@ Each design is defined by `(n1, n, r1, e1, r)`:
 - **`R/search.R`** — thin R wrapper around `find_feasible_designs_cpp`. Validates inputs, delegates the five nested loops to C++, emits a message when no designs are found. Returns a `data.frame` with `n` first, `p0`/`p1` dropped, and row names reset. Key options: `irrevocable` (enforce `e1 ≥ r`), `simon` (fix `e1 = n1+1`, no interim efficacy stop).
 - **`R/admissibility.R`** — thin R wrapper around `find_admissible_designs_cpp`. Returns the 3D Pareto frontier on `(n, en_null, en_alt)`: a design survives if no other design is weakly better on all three axes with at least one strict improvement. Sorting (by `n` descending) and row-name reset done in R.
 - **`R/admissible_designs.R`** — top-level convenience function. Calls `find_feasible_designs` then `find_admissible_designs`, and labels the minimax design (min `n`, tie-break min `en_null`) and optimal design (min `en_null`, tie-break min `n`) via a `design_type` column. Accepts `irrevocable` and `simon` and passes them through.
-- **`src/twostage.cpp`** — C++ implementations (`evaluate_design_cpp`, `find_feasible_designs_cpp`, `find_admissible_designs_cpp`). Hot loops live here; binomial PMF cached per `n1` inside the search loop.
+- **`src/twostage.cpp`** — C++ implementations (`evaluate_design_cpp`, `find_feasible_designs_cpp`, `find_admissible_designs_cpp`). Hot loops live here; binomial PMF cached per `n1`, and survival function `P(X2 ≥ k)` cached per `(n, n1)` to hoist `R::pbinom` out of the innermost loop. `find_admissible_designs_cpp` uses a sort-then-sweep O(m log m) Pareto filter with a 2D staircase rather than the naïve O(m²) double scan.
+
+## CRAN compliance
+
+This package targets CRAN. **All changes must be CRAN-compliant.** Key constraints:
+
+- **No custom compiler flags** in `src/Makevars`. Packages must not override the R installation's optimization settings (Writing R Extensions §1.2.1). `-O3`, `-march=native`, and equivalents are prohibited. If you want higher optimization locally, put flags in your personal `~/.R/Makevars` — never in the package's `src/Makevars`.
+- **No non-portable C++ extensions.** The bare `restrict` keyword is C99, not C++. Compiler-specific spellings (`__restrict__` on gcc/clang, `__restrict` on MSVC) differ across the toolchains CRAN builds on and must not appear in package source.
+- **Must pass `devtools::check()` with 0 errors.** Run `Rscript -e 'devtools::check()'` before committing any change to R or C++ source. Warnings and notes that are pre-existing environment artifacts (locale, qpdf, system R flags) are acceptable; new ones are not.
+- **C++ standard.** Stick to C++11 (the Rcpp minimum). Avoid features requiring C++14 or later unless `SystemRequirements` and `CXX_STD` in `DESCRIPTION` are updated and the change is verified to build on all CRAN platforms.
 
 ### Known sharp edge
 
