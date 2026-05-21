@@ -118,6 +118,39 @@ cat(sprintf("%d admissible designs total, %d irrevocable\n",
             nrow(result_all), sum(result_all$is_irrevocable)))
 ```
 
+## Restricting to Simon two-stage designs
+
+Simon two-stage designs are those with no interim stopping for efficacy —
+the trial always proceeds to stage 2 unless stopped early for futility.
+In the package's parameterisation this means $e_1 = n_1 + 1$ (the disabled
+sentinel value). Pass `simon = TRUE` to restrict the search to this class.
+
+Because Simon designs never make an interim efficacy declaration, the
+irrevocability constraint ($e_1 \ge r$) is vacuously satisfied for any $r$,
+so the `irrevocable` argument has no effect when `simon = TRUE`.
+
+```{r simon}
+simon_result <- admissible_designs(p0, p1, alpha, power, n_max, simon = TRUE)
+nrow(simon_result)
+```
+
+All returned designs have $e_1 = n_1 + 1$:
+
+```{r simon-check}
+all(simon_result$e1 == simon_result$n1 + 1L)
+```
+
+```{r simon-table}
+simon_out <- simon_result[, c("n1", "n", "r1", "e1", "r",
+                              "alpha_actual", "power_actual",
+                              "en_null", "en_alt", "design_type")]
+simon_out$alpha_actual <- round(simon_out$alpha_actual, 4)
+simon_out$power_actual <- round(simon_out$power_actual, 4)
+simon_out$en_null      <- round(simon_out$en_null, 2)
+simon_out$en_alt       <- round(simon_out$en_alt, 2)
+print(simon_out, row.names = FALSE)
+```
+
 ## Evaluating a single design
 
 `evaluate_design()` computes the operating characteristics for one design
