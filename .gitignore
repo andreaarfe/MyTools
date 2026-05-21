@@ -1,3 +1,6 @@
 /doc/
 /Meta/
 /figure/
+vignettes/.build.timestamp
+vignettes/*.R
+vignettes/*_files/
