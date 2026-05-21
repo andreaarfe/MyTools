@@ -6,7 +6,14 @@
 \alias{twostage-package}
 \title{twostage: Admissible Two-Stage Single-Arm Trial Designs with Binary Endpoint}
 \description{
-Enumerates all admissible two-stage single-arm clinical trial designs for a binary endpoint. Supports futility and efficacy stopping at an interim analysis, with an irrevocability constraint ensuring that an interim efficacy declaration cannot be overturned by the final analysis.
+Enumerates all admissible two-stage single-arm clinical trial designs for a
+binary endpoint. Supports futility and efficacy stopping at an interim
+analysis. The \code{irrevocable = TRUE} option (the default) enforces the
+constraint \eqn{e_1 \ge r}, ensuring that an interim efficacy declaration
+cannot be overturned by the final analysis. This should be used when the
+interim efficacy stopping rule is \strong{non-binding} — i.e. the trial may
+continue to stage 2 even after declaring interim success — so that the final
+decision remains coherent with the interim declaration.
 }
 \author{
 \strong{Maintainer}: Andrea Arfe \email{andrea.arfe@gmail.com}
