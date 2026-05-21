@@ -1,0 +1,14 @@
+Package: twostage
+Title: Admissible Two-Stage Single-Arm Trial Designs with Binary Endpoint
+Version: 0.1.0
+Authors@R: person("Andrea", "Arfe", email = "andrea.arfe@gmail.com",
+                  role = c("aut", "cre"))
+Description: Enumerates all admissible two-stage single-arm clinical trial
+    designs for a binary endpoint. Supports futility and efficacy stopping
+    at an interim analysis, with an irrevocability constraint ensuring that
+    an interim efficacy declaration cannot be overturned by the final analysis.
+License: MIT + file LICENSE
+Imports: stats
+Suggests: testthat (>= 3.0.0)
+Encoding: UTF-8
+RoxygenNote: 7.0.0
