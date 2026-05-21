@@ -72,6 +72,18 @@ Each design is defined by `(n1, n, r1, e1, r)`:
 - **`R/admissible_designs.R`** — top-level convenience function. Calls `find_feasible_designs` then `find_admissible_designs`, and labels the minimax design (min `n`, tie-break min `en_null`) and optimal design (min `en_null`, tie-break min `n`) via a `design_type` column. Accepts `irrevocable` and `simon` and passes them through.
 - **`src/twostage.cpp`** — C++ implementations (`evaluate_design_cpp`, `find_feasible_designs_cpp`, `find_admissible_designs_cpp`). Hot loops live here; binomial PMF cached per `n1`, and survival function `P(X2 ≥ k)` cached per `(n, n1)` to hoist `R::pbinom` out of the innermost loop. `find_admissible_designs_cpp` uses a sort-then-sweep O(m log m) Pareto filter with a 2D staircase rather than the naïve O(m²) double scan.
 
+## Planned next feature
+
+Add a function to evaluate the operating characteristics of a two-stage design at an arbitrary response probability `p` (not just the design's `p0`/`p1`). This enables operating-characteristic curves across a range of `p` values.
+
+**Outputs of interest:**
+- Probability of promotion (final success: `X1 + X2 ≥ r`, or early efficacy: `X1 ≥ e1`)
+- Probability of early stopping for futility (`X1 ≤ r1`)
+- Probability of early stopping for efficacy (`X1 ≥ e1`)
+- Expected final sample size
+
+**Implementation note:** `oc_single()` in `src/twostage.cpp` already computes all four quantities for a given `p` given a precomputed PMF of `X1` and survival table for `X2`. The new R-level function would call `evaluate_design_cpp` (or a thin new C++ helper) in a vectorised loop over a user-supplied vector of `p` values, returning a `data.frame` with one row per `p`. The `build_surv()` helper introduced in the pbinom-caching refactor can be reused directly.
+
 ## CRAN compliance
 
 This package targets CRAN. **All changes must be CRAN-compliant.** Key constraints:
