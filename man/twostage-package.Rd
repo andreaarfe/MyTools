@@ -12,4 +12,7 @@ Enumerates all admissible two-stage single-arm clinical trial designs for a bina
 \strong{Maintainer}: Andrea Arfe \email{andrea.arfe@gmail.com}
 
 }
+\seealso{
+\code{vignette("twostage", package = "twostage")}
+}
 \keyword{internal}
