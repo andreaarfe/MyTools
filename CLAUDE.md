@@ -39,6 +39,8 @@ Rscript -e 'devtools::build_vignettes()'
 Rscript -e 'devtools::document()'
 ```
 
+**Documentation rule:** Whenever a function signature or behaviour changes (parameters, defaults, return value), update both the Roxygen comments in the corresponding `R/*.R` file **and** the generated `man/*.Rd` file. Run `devtools::document()` to regenerate `.Rd` files if R is available; otherwise edit `man/*.Rd` by hand to keep them in sync.
+
 **After editing `src/twostage.cpp`** (regenerates R/RcppExports.R and src/RcppExports.cpp):
 ```bash
 Rscript -e 'Rcpp::compileAttributes()'
