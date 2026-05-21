@@ -236,3 +236,33 @@ test_that("admissible_designs with irrevocable=FALSE includes non-irrevocable de
   expect_gt(nrow(result), 0)
   expect_true(any(!result$is_irrevocable))
 })
+
+# ---------------------------------------------------------------------------
+# simon = TRUE — Simon two-stage designs (no interim efficacy stop)
+# ---------------------------------------------------------------------------
+
+test_that("simon=TRUE returns only designs with e1 = n1 + 1", {
+  feasible <- find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+                                    power = 0.80, n_max = 25L, simon = TRUE)
+  expect_gt(nrow(feasible), 0)
+  expect_true(all(feasible$e1 == feasible$n1 + 1L))
+})
+
+test_that("simon=TRUE designs are a subset of all feasible designs", {
+  args <- list(p0 = 0.1, p1 = 0.3, alpha = 0.05, power = 0.80, n_max = 20L)
+  f_simon <- do.call(find_feasible_designs, c(args, simon = TRUE,
+                                              irrevocable = FALSE))
+  f_all   <- do.call(find_feasible_designs, c(args, irrevocable = FALSE))
+  keys <- function(d) paste(d$n1, d$n, d$r1, d$e1, d$r)
+  expect_true(all(keys(f_simon) %in% keys(f_all)))
+  expect_lte(nrow(f_simon), nrow(f_all))
+})
+
+test_that("admissible_designs with simon=TRUE returns valid output with design_type", {
+  result <- admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+                               power = 0.80, n_max = 25L, simon = TRUE)
+  expect_s3_class(result, "data.frame")
+  expect_gt(nrow(result), 0)
+  expect_true("design_type" %in% names(result))
+  expect_true(all(result$e1 == result$n1 + 1L))
+})

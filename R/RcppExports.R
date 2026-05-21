@@ -5,8 +5,8 @@ evaluate_design_cpp <- function(n1, n, r1, e1, r, p0, p1) {
     .Call(`_twostage_evaluate_design_cpp`, n1, n, r1, e1, r, p0, p1)
 }
 
-find_feasible_designs_cpp <- function(p0, p1, alpha, power, n_max, n1_min, irrevocable) {
-    .Call(`_twostage_find_feasible_designs_cpp`, p0, p1, alpha, power, n_max, n1_min, irrevocable)
+find_feasible_designs_cpp <- function(p0, p1, alpha, power, n_max, n1_min, irrevocable, simon) {
+    .Call(`_twostage_find_feasible_designs_cpp`, p0, p1, alpha, power, n_max, n1_min, irrevocable, simon)
 }
 
 find_admissible_designs_cpp <- function(n, en_null, en_alt) {

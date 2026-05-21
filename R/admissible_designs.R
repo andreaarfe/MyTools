@@ -15,6 +15,11 @@
 #' @param irrevocable Logical. If `TRUE` (default), restrict to designs where
 #'   `e1 >= r`, so that an interim efficacy declaration cannot be overturned
 #'   at the final analysis. Set to `FALSE` to search without this constraint.
+#' @param simon Logical. If `TRUE`, restrict to Simon two-stage designs,
+#'   i.e. designs with no interim stopping for efficacy (`e1 = n1 + 1`).
+#'   Default `FALSE`. When `simon = TRUE` the `irrevocable` argument has no
+#'   effect: because there is no interim efficacy declaration, the
+#'   irrevocability constraint is vacuously satisfied regardless of `r`.
 #'
 #' @return A `data.frame` with one row per admissible design and columns
 #'   `n1`, `n`, `n2`, `r1`, `e1`, `r`, `p0`, `p1`, `alpha_actual`,
@@ -35,9 +40,10 @@
 #' @export
 admissible_designs <- function(p0, p1, alpha, power,
                                n_max, n1_min = 5L,
-                               irrevocable = TRUE) {
+                               irrevocable = TRUE,
+                               simon = FALSE) {
   feasible  <- find_feasible_designs(p0, p1, alpha, power,
-                                     n_max, n1_min, irrevocable)
+                                     n_max, n1_min, irrevocable, simon)
   if (nrow(feasible) == 0L) return(feasible)
 
   admissible <- find_admissible_designs(feasible)
