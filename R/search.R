@@ -20,6 +20,11 @@
 #'   `e1 >= r`, guaranteeing that an interim efficacy declaration cannot be
 #'   overturned at the final analysis. Set to `FALSE` to include designs
 #'   without this constraint.
+#' @param simon Logical. If `TRUE`, restrict to Simon two-stage designs,
+#'   i.e. designs with no interim stopping for efficacy (`e1 = n1 + 1`).
+#'   Default `FALSE`. When `simon = TRUE` the `irrevocable` argument has no
+#'   effect: because there is no interim efficacy declaration, the
+#'   irrevocability constraint is vacuously satisfied regardless of `r`.
 #'
 #' @return A `data.frame` with one row per feasible design and columns
 #'   `n1`, `n`, `n2`, `r1`, `e1`, `r`, `p0`, `p1`, `alpha_actual`,
@@ -28,7 +33,8 @@
 #' @export
 find_feasible_designs <- function(p0, p1, alpha, power,
                                   n_max, n1_min = 5L,
-                                  irrevocable = TRUE) {
+                                  irrevocable = TRUE,
+                                  simon = FALSE) {
   stopifnot(0 < p0, p0 < p1, p1 < 1,
             0 < alpha, alpha < 1,
             0 < power, power < 1,
@@ -37,7 +43,8 @@ find_feasible_designs <- function(p0, p1, alpha, power,
   out <- find_feasible_designs_cpp(as.numeric(p0), as.numeric(p1),
                                    as.numeric(alpha), as.numeric(power),
                                    as.integer(n_max), as.integer(n1_min),
-                                   as.logical(irrevocable))
+                                   as.logical(irrevocable),
+                                   as.logical(simon))
   if (nrow(out) == 0L) {
     message("No feasible designs found. Try increasing n_max.")
     return(data.frame())

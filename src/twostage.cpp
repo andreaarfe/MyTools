@@ -78,7 +78,7 @@ List evaluate_design_cpp(int n1, int n, int r1, int e1, int r,
 DataFrame find_feasible_designs_cpp(double p0, double p1,
                                     double alpha, double power,
                                     int n_max, int n1_min,
-                                    bool irrevocable) {
+                                    bool irrevocable, bool simon) {
   std::vector<int>    out_n1, out_n, out_n2, out_r1, out_e1, out_r;
   std::vector<double> out_alpha, out_power, out_en0, out_en1;
   std::vector<int>    out_is_irrev;
@@ -102,9 +102,9 @@ DataFrame find_feasible_designs_cpp(double p0, double p1,
 
       for (int r = 0; r <= n; ++r) {
         if (r == 0) continue;
-        if (irrevocable && r > n1) continue;
+        if (!simon && irrevocable && r > n1) continue;
 
-        int e1_min = irrevocable ? r : 0;
+        int e1_min = simon ? n1 + 1 : (irrevocable ? r : 0);
         for (int e1 = e1_min; e1 <= n1 + 1; ++e1) {
           for (int r1 = -1; r1 <= e1 - 1; ++r1) {
             double alpha_actual, en_null, power_actual, en_alt;
