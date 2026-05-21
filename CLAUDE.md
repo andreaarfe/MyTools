@@ -66,7 +66,7 @@ Each design is defined by `(n1, n, r1, e1, r)`:
 
 ### Module responsibilities
 
-- **`R/distributions.R`** — stateless wrappers: `binom_pmf`, `binom_cdf`, `binom_upper`. Use `pbinom(..., lower.tail = FALSE)` for numerical stability.
+- **`R/distributions.R`** — stateless wrappers: `binom_pmf`, `binom_cdf`, `binom_upper`. Unused since the Rcpp rewrite; the C++ code calls `R::dbinom` directly.
 - **`R/design.R`** — thin R wrapper around `evaluate_design_cpp`. Computes `alpha_actual`, `power_actual`, `en_null`, `en_alt`, `is_irrevocable` for a single design. No input validation (caller's responsibility).
 - **`R/search.R`** — thin R wrapper around `find_feasible_designs_cpp`. Validates inputs, delegates the five nested loops to C++, emits a message when no designs are found. Returns a `data.frame`. Key options: `irrevocable` (enforce `e1 ≥ r`), `simon` (fix `e1 = n1+1`, no interim efficacy stop).
 - **`R/admissibility.R`** — thin R wrapper around `find_admissible_designs_cpp`. Returns the 3D Pareto frontier on `(n, en_null, en_alt)`: a design survives if no other design is weakly better on all three axes with at least one strict improvement. Sorting (by `en_null`) done in R.
