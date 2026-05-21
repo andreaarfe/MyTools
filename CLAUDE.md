@@ -51,15 +51,17 @@ Each design is defined by `(n1, n, r1, e1, r)`:
 - `e1`: interim efficacy boundary — declare success if `X1 ≥ e1` (`n1+1` = no interim stop)
 - `r`: final success threshold — success if `X1 + X2 ≥ r`
 
-**Irrevocability constraint:** `e1 ≥ r` — guarantees that once interim efficacy is declared, no stage-2 outcome can overturn it (worst case: X2 = 0, so X1 + X2 = X1 ≥ e1 ≥ r).
+**Irrevocability constraint:** `e1 ≥ r` — guarantees that once interim efficacy is declared, no stage-2 outcome can overturn it (worst case: X2 = 0, so X1 + X2 = X1 ≥ e1 ≥ r). Enforced when `irrevocable = TRUE` (default).
+
+**Simon two-stage designs:** `e1 = n1+1` (no interim efficacy stop). Pass `simon = TRUE` to restrict the search to this class. When `simon = TRUE`, `irrevocable` has no effect — irrevocability is vacuously satisfied because there is never an interim efficacy declaration.
 
 ### Module responsibilities
 
 - **`R/distributions.R`** — stateless wrappers: `binom_pmf`, `binom_cdf`, `binom_upper`. Use `pbinom(..., lower.tail = FALSE)` for numerical stability.
 - **`R/design.R`** — thin R wrapper around `evaluate_design_cpp`. Computes `alpha_actual`, `power_actual`, `en_null`, `en_alt`, `is_irrevocable` for a single design. No input validation (caller's responsibility).
-- **`R/search.R`** — thin R wrapper around `find_feasible_designs_cpp`. Validates inputs, delegates the five nested loops to C++, emits a message when no designs are found. Returns a `data.frame`.
+- **`R/search.R`** — thin R wrapper around `find_feasible_designs_cpp`. Validates inputs, delegates the five nested loops to C++, emits a message when no designs are found. Returns a `data.frame`. Key options: `irrevocable` (enforce `e1 ≥ r`), `simon` (fix `e1 = n1+1`, no interim efficacy stop).
 - **`R/admissibility.R`** — thin R wrapper around `find_admissible_designs_cpp`. Returns the 3D Pareto frontier on `(n, en_null, en_alt)`: a design survives if no other design is weakly better on all three axes with at least one strict improvement. Sorting (by `en_null`) done in R.
-- **`R/admissible_designs.R`** — top-level convenience function. Calls `find_feasible_designs` then `find_admissible_designs`, and labels the minimax design (min `n`, tie-break min `en_null`) and optimal design (min `en_null`, tie-break min `n`) via a `design_type` column.
+- **`R/admissible_designs.R`** — top-level convenience function. Calls `find_feasible_designs` then `find_admissible_designs`, and labels the minimax design (min `n`, tie-break min `en_null`) and optimal design (min `en_null`, tie-break min `n`) via a `design_type` column. Accepts `irrevocable` and `simon` and passes them through.
 - **`src/twostage.cpp`** — C++ implementations (`evaluate_design_cpp`, `find_feasible_designs_cpp`, `find_admissible_designs_cpp`). Hot loops live here; binomial PMF cached per `n1` inside the search loop.
 
 ### Known sharp edge
