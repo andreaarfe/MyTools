@@ -25,8 +25,15 @@ evaluate_design <- function(n1, n, r1, e1, r, p0, p1) {
     # P(futility stop): X1 in {0, ..., r1}
     p_fut1 <- if (r1 < 0L) 0 else sum(pmf_x1[1L:(r1 + 1L)])
 
-    # Stage-2 success contribution: X1 in {r1+1, ..., e1-1}
-    cont_vals <- seq.int(r1 + 1L, e1 - 1L)
+    # Stage-2 success contribution: X1 in {r1+1, ..., e1-1}.
+    # When r1 = e1 - 1 the continuation region is empty; guard explicitly
+    # because seq.int(a, b) with a > b produces a *decreasing* sequence
+    # rather than an empty one, which would double-count boundary values.
+    cont_vals <- if (r1 + 1L <= e1 - 1L) {
+      seq.int(r1 + 1L, e1 - 1L)
+    } else {
+      integer(0L)
+    }
     p_success_2 <- if (length(cont_vals) == 0L) {
       0
     } else {

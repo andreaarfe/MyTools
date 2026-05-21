@@ -1,11 +1,23 @@
 library(testthat)
 
-# Run from the package root:  Rscript -e "testthat::test_file('tests/test_design.R')"
+# Resolve the package root regardless of working directory.
+.find_root <- function() {
+  args <- commandArgs(trailingOnly = FALSE)
+  file_arg <- sub("^--file=", "", args[grep("^--file=", args)])
+  if (length(file_arg) == 1L) {
+    return(normalizePath(file.path(dirname(file_arg), "..")))
+  }
+  # Fallback for testthat::test_file() and similar callers
+  if (file.exists("R/distributions.R")) return(normalizePath("."))
+  if (file.exists("../R/distributions.R")) return(normalizePath(".."))
+  stop("Cannot locate package root")
+}
+.root <- .find_root()
 
-source("R/distributions.R")
-source("R/design.R")
-source("R/search.R")
-source("R/admissibility.R")
+source(file.path(.root, "R", "distributions.R"))
+source(file.path(.root, "R", "design.R"))
+source(file.path(.root, "R", "search.R"))
+source(file.path(.root, "R", "admissibility.R"))
 
 # ---------------------------------------------------------------------------
 # distributions.R
@@ -64,6 +76,37 @@ test_that("success probability is 0 when r exceeds total sample size", {
                        p0 = 0.2, p1 = 0.5)
   expect_equal(d$alpha_actual, 0, tolerance = 1e-15)
   expect_equal(d$power_actual, 0, tolerance = 1e-15)
+})
+
+test_that("empty continuation region (r1 = e1 - 1) gives no stage-2 contribution", {
+  # When r1 = e1 - 1, every outcome triggers either futility or efficacy at
+  # interim, so the trial always stops at stage 1: P(success) = P(X1 >= e1)
+  # and EN = n1.
+  n1 <- 10L; n <- 20L; e1 <- 6L; r1 <- e1 - 1L; r <- 6L
+  for (p in c(0.1, 0.3, 0.5, 0.8)) {
+    d <- evaluate_design(n1, n, r1, e1, r, p0 = p, p1 = p)
+    p_eff <- pbinom(e1 - 1L, n1, p, lower.tail = FALSE)
+    expect_equal(d$alpha_actual, p_eff, tolerance = 1e-10,
+                 label = sprintf("p=%.2f, alpha", p))
+    expect_equal(d$power_actual, p_eff, tolerance = 1e-10,
+                 label = sprintf("p=%.2f, power", p))
+    expect_equal(d$en_null, n1, tolerance = 1e-10,
+                 label = sprintf("p=%.2f, EN", p))
+  }
+})
+
+test_that("success probability matches manual computation in continuation region", {
+  # Hand-checked example.
+  n1 <- 5L; n <- 10L; r1 <- 1L; e1 <- 4L; r <- 5L; p <- 0.3
+  d <- evaluate_design(n1, n, r1, e1, r, p0 = p, p1 = p)
+
+  # P(efficacy at stage 1) = P(X1 >= 4)
+  p_eff1 <- pbinom(3L, n1, p, lower.tail = FALSE)
+  # Continuation region: X1 in {2, 3}; need X2 >= r - x1
+  p_cont <- dbinom(2L, n1, p) * pbinom(2L, 5L, p, lower.tail = FALSE) +
+            dbinom(3L, n1, p) * pbinom(1L, 5L, p, lower.tail = FALSE)
+  expected <- p_eff1 + p_cont
+  expect_equal(d$alpha_actual, expected, tolerance = 1e-12)
 })
 
 # ---------------------------------------------------------------------------
