@@ -21,6 +21,7 @@
 #'   `n1`, `n`, `n2`, `r1`, `e1`, `r`, `p0`, `p1`, `alpha_actual`,
 #'   `power_actual`, `en_null`, `en_alt`, `is_irrevocable`.
 #'   Returns an empty `data.frame` (with a message) when no designs are found.
+#' @export
 find_feasible_designs <- function(p0, p1, alpha, power,
                                   n_max, n1_min = 5L) {
   stopifnot(0 < p0, p0 < p1, p1 < 1,

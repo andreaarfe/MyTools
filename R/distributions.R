@@ -4,6 +4,7 @@
 #' @param n Integer. Number of trials.
 #' @param p Numeric in (0, 1). Success probability.
 #' @return P(X = k) where X ~ Binomial(n, p).
+#' @keywords internal
 binom_pmf <- function(k, n, p) dbinom(k, size = n, prob = p)
 
 #' Binomial cumulative distribution function
@@ -12,6 +13,7 @@ binom_pmf <- function(k, n, p) dbinom(k, size = n, prob = p)
 #' @param n Integer. Number of trials.
 #' @param p Numeric in (0, 1). Success probability.
 #' @return P(X <= k) where X ~ Binomial(n, p).
+#' @keywords internal
 binom_cdf <- function(k, n, p) pbinom(k, size = n, prob = p)
 
 #' Binomial upper tail probability
@@ -23,6 +25,7 @@ binom_cdf <- function(k, n, p) pbinom(k, size = n, prob = p)
 #' @param n Integer. Number of trials.
 #' @param p Numeric in (0, 1). Success probability.
 #' @return P(X >= k) where X ~ Binomial(n, p).
+#' @keywords internal
 binom_upper <- function(k, n, p) {
   pbinom(k - 1L, size = n, prob = p, lower.tail = FALSE)
 }

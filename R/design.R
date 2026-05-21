@@ -35,6 +35,7 @@
 #'     \item{en_alt}{Expected sample size under p1.}
 #'     \item{is_irrevocable}{Logical; TRUE when e1 >= r.}
 #'   }
+#' @export
 evaluate_design <- function(n1, n, r1, e1, r, p0, p1) {
   n2 <- n - n1
 

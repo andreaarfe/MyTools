@@ -1,24 +1,5 @@
 library(testthat)
 
-# Resolve the package root regardless of working directory.
-.find_root <- function() {
-  args <- commandArgs(trailingOnly = FALSE)
-  file_arg <- sub("^--file=", "", args[grep("^--file=", args)])
-  if (length(file_arg) == 1L) {
-    return(normalizePath(file.path(dirname(file_arg), "..")))
-  }
-  # Fallback for testthat::test_file() and similar callers
-  if (file.exists("R/distributions.R")) return(normalizePath("."))
-  if (file.exists("../R/distributions.R")) return(normalizePath(".."))
-  stop("Cannot locate package root")
-}
-.root <- .find_root()
-
-source(file.path(.root, "R", "distributions.R"))
-source(file.path(.root, "R", "design.R"))
-source(file.path(.root, "R", "search.R"))
-source(file.path(.root, "R", "admissibility.R"))
-
 # ---------------------------------------------------------------------------
 # distributions.R
 # ---------------------------------------------------------------------------

@@ -10,6 +10,7 @@
 #'
 #' @return A `data.frame` of admissible designs sorted by `en_null` ascending.
 #'   Returns `designs` unchanged (empty) when the input has zero rows.
+#' @export
 find_admissible_designs <- function(designs) {
   if (nrow(designs) == 0L) return(designs)
 

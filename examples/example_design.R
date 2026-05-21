@@ -1,12 +1,9 @@
 # End-to-end example: find all admissible two-stage designs
 # for p0=0.10, p1=0.30, alpha=0.05, power=0.80, n_max=40.
 #
-# Run from the package root:  Rscript examples/example_design.R
+# Run after installing the package:  Rscript examples/example_design.R
 
-source("R/distributions.R")
-source("R/design.R")
-source("R/search.R")
-source("R/admissibility.R")
+library(twostage)
 
 cat("Searching for feasible designs...\n")
 feasible <- find_feasible_designs(

@@ -6,25 +6,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Run all tests** (from repo root):
 ```bash
-Rscript -e 'testthat::test_file("tests/test_design.R")'
+Rscript -e 'devtools::test()'
 ```
 
 **Run a single test by name:**
 ```bash
-Rscript -e 'testthat::test_file("tests/test_design.R", filter = "empty continuation region")'
+Rscript -e 'devtools::test(filter = "empty continuation region")'
 ```
 
-**Run the end-to-end example:**
+**Run R CMD check:**
+```bash
+Rscript -e 'devtools::check()'
+```
+
+**Load all modules interactively** (from repo root):
+```r
+devtools::load_all()
+```
+
+**Run the end-to-end example** (after installing or loading the package):
 ```bash
 Rscript examples/example_design.R
-```
-
-**Source all modules interactively** (from repo root):
-```r
-source("R/distributions.R")
-source("R/design.R")
-source("R/search.R")
-source("R/admissibility.R")
 ```
 
 ## Architecture
