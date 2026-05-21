@@ -1,8 +1,15 @@
-# Filter a data.frame of feasible designs to the Pareto frontier on
-# (en_null, en_alt): a design is admissible if no other feasible design has
-# EN_null <= its EN_null AND EN_alt <= its EN_alt, with at least one strict.
-#
-# Returns a data.frame of admissible designs sorted by en_null ascending.
+#' Filter designs to the Pareto frontier on expected sample sizes
+#'
+#' Retains only admissible (Pareto-optimal) designs with respect to expected
+#' sample size under the null (`en_null`) and alternative (`en_alt`).
+#' A design is admissible if no other design is weakly better on both axes
+#' with at least one strict improvement.
+#'
+#' @param designs A `data.frame` as returned by [find_feasible_designs()],
+#'   containing at least columns `en_null` and `en_alt`.
+#'
+#' @return A `data.frame` of admissible designs sorted by `en_null` ascending.
+#'   Returns `designs` unchanged (empty) when the input has zero rows.
 find_admissible_designs <- function(designs) {
   if (nrow(designs) == 0L) return(designs)
 
