@@ -25,7 +25,7 @@
 #'   irrevocability constraint is vacuously satisfied regardless of `r`.
 #'
 #' @return A `data.frame` with one row per admissible design and columns
-#'   `n`, `n1`, `n2`, `r1`, `e1`, `r`, `p0`, `p1`, `alpha_actual`,
+#'   `n`, `n1`, `n2`, `r1`, `e1`, `r`, `alpha_actual`,
 #'   `power_actual`, `en_null`, `en_alt`, `is_irrevocable`, and `design_type`.
 #'   The `design_type` column is a character vector with values:
 #'   \describe{
