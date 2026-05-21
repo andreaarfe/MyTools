@@ -94,7 +94,7 @@ test_that("success probability matches manual computation in continuation region
 # search.R — find_feasible_designs
 # ---------------------------------------------------------------------------
 
-test_that("all returned designs satisfy constraints", {
+test_that("all returned designs satisfy constraints (irrevocable = TRUE)", {
   alpha <- 0.05; pw <- 0.80
   feasible <- find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = alpha,
                                     power = pw, n_max = 25L)
@@ -103,6 +103,27 @@ test_that("all returned designs satisfy constraints", {
   expect_true(all(feasible$power_actual >= pw     - 1e-9))
   expect_true(all(feasible$is_irrevocable))
   expect_true(all(feasible$r1 < feasible$e1))
+})
+
+test_that("irrevocable=FALSE returns designs with e1 < r", {
+  feasible <- find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+                                    power = 0.80, n_max = 25L,
+                                    irrevocable = FALSE)
+  expect_gt(nrow(feasible), 0)
+  # Must include at least some non-irrevocable designs
+  expect_true(any(!feasible$is_irrevocable))
+  # Error and power constraints still hold
+  expect_true(all(feasible$alpha_actual <= 0.05 + 1e-9))
+  expect_true(all(feasible$power_actual >= 0.80 - 1e-9))
+})
+
+test_that("irrevocable=TRUE is a subset of irrevocable=FALSE", {
+  args <- list(p0 = 0.1, p1 = 0.3, alpha = 0.05, power = 0.80, n_max = 20L)
+  f_irrev  <- do.call(find_feasible_designs, c(args, irrevocable = TRUE))
+  f_all    <- do.call(find_feasible_designs, c(args, irrevocable = FALSE))
+  keys <- function(d) paste(d$n1, d$n, d$r1, d$e1, d$r)
+  expect_true(all(keys(f_irrev) %in% keys(f_all)))
+  expect_lte(nrow(f_irrev), nrow(f_all))
 })
 
 # ---------------------------------------------------------------------------
@@ -126,20 +147,22 @@ test_that("no admissible design is dominated by another admissible design", {
                                       power = 0.80, n_max = 25L)
   admissible <- find_admissible_designs(feasible)
   m   <- nrow(admissible)
+  nm  <- admissible$n
   en0 <- admissible$en_null
   en1 <- admissible$en_alt
   for (i in seq_len(m)) {
     dominated <- any(
       seq_len(m) != i &
-        en0 <= en0[i] & en1 <= en1[i] &
-        (en0 < en0[i] | en1 < en1[i])
+        nm  <= nm[i]  & en0 <= en0[i] & en1 <= en1[i] &
+        (nm  < nm[i]  | en0 < en0[i]  | en1 < en1[i])
     )
     expect_false(dominated, label = sprintf("design %d is dominated", i))
   }
 })
 
 test_that("admissible set from synthetic designs has correct Pareto frontier", {
-  # D1 dominated by D2 on both axes; D3 on frontier (trades EN0 for EN1).
+  # All designs have n=20, so 3D Pareto behaves the same as 2D on (en_null, en_alt).
+  # D1 dominated by D2 on both EN axes; D3 on frontier (trades EN0 for EN1).
   make_row <- function(en0, en1) {
     data.frame(n1=10, n=20, n2=10, r1=2, e1=8, r=8,
                p0=0.1, p1=0.3,
@@ -152,4 +175,64 @@ test_that("admissible set from synthetic designs has correct Pareto frontier", {
   adm <- find_admissible_designs(designs)
   expect_equal(nrow(adm), 2L)
   expect_true(all(adm$en_null %in% c(14, 13)))
+})
+
+test_that("3D admissible set retains designs with small n even if worse on EN axes", {
+  # D1: small n but worse EN; D2: large n but better EN.
+  # In 2D (EN_null, EN_alt) D1 is dominated; in 3D it survives because n[D1] < n[D2].
+  make_row <- function(n, en0, en1) {
+    data.frame(n1=10, n=n, n2=n-10L, r1=2, e1=8, r=8,
+               p0=0.1, p1=0.3,
+               alpha_actual=0.04, power_actual=0.82,
+               en_null=en0, en_alt=en1, is_irrevocable=TRUE)
+  }
+  designs <- rbind(make_row(18, 15, 14),  # D1 — small n, worse EN axes
+                   make_row(25, 13, 12))  # D2 — large n, better EN axes
+  adm <- find_admissible_designs(designs)
+  expect_equal(nrow(adm), 2L)  # both survive 3D Pareto
+})
+
+# ---------------------------------------------------------------------------
+# admissible_designs.R — admissible_designs
+# ---------------------------------------------------------------------------
+
+test_that("admissible_designs returns a data.frame with design_type column", {
+  result <- admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+                               power = 0.80, n_max = 25L)
+  expect_s3_class(result, "data.frame")
+  expect_gt(nrow(result), 0)
+  expect_true("design_type" %in% names(result))
+  expect_true(all(result$design_type %in% c("minimax", "optimal",
+                                             "minimax, optimal", "")))
+})
+
+test_that("exactly one minimax and one optimal label in admissible_designs output", {
+  result <- admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+                               power = 0.80, n_max = 25L)
+  mm_rows  <- grepl("minimax", result$design_type)
+  opt_rows <- grepl("optimal", result$design_type)
+  expect_equal(sum(mm_rows),  1L)
+  expect_equal(sum(opt_rows), 1L)
+})
+
+test_that("minimax design has the smallest n in the admissible set", {
+  result <- admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+                               power = 0.80, n_max = 25L)
+  mm_n <- result$n[grepl("minimax", result$design_type)]
+  expect_true(all(mm_n <= result$n))
+})
+
+test_that("optimal design has the smallest en_null in the admissible set", {
+  result <- admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+                               power = 0.80, n_max = 25L)
+  opt_en <- result$en_null[grepl("optimal", result$design_type)]
+  expect_true(all(opt_en <= result$en_null))
+})
+
+test_that("admissible_designs with irrevocable=FALSE includes non-irrevocable designs", {
+  result <- admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+                               power = 0.80, n_max = 25L,
+                               irrevocable = FALSE)
+  expect_gt(nrow(result), 0)
+  expect_true(any(!result$is_irrevocable))
 })

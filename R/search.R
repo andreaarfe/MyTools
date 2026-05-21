@@ -2,20 +2,24 @@
 #'
 #' Exhaustively searches over all combinations of (n, n1, r, e1, r1) with
 #' total sample size up to `n_max` and returns designs that satisfy the type I
-#' error, power, and irrevocability constraints.
+#' error and power constraints.
 #'
 #' A design is feasible when:
 #' - `alpha_actual <= alpha`
 #' - `power_actual >= power`
-#' - `e1 >= r` (irrevocability)
 #' - `r1 < e1` (non-trivial continuation region)
+#' - `e1 >= r` (irrevocability, enforced only when `irrevocable = TRUE`)
 #'
-#' @param p0     Numeric in (0, 1). Null response rate.
-#' @param p1     Numeric in (0, 1). Alternative response rate (p1 > p0).
-#' @param alpha  Numeric in (0, 1). Maximum allowable type I error.
-#' @param power  Numeric in (0, 1). Minimum required power.
-#' @param n_max  Integer. Maximum total sample size to consider.
-#' @param n1_min Integer. Minimum stage-1 sample size (default 5).
+#' @param p0          Numeric in (0, 1). Null response rate.
+#' @param p1          Numeric in (0, 1). Alternative response rate (p1 > p0).
+#' @param alpha       Numeric in (0, 1). Maximum allowable type I error.
+#' @param power       Numeric in (0, 1). Minimum required power.
+#' @param n_max       Integer. Maximum total sample size to consider.
+#' @param n1_min      Integer. Minimum stage-1 sample size (default 5).
+#' @param irrevocable Logical. If `TRUE` (default), restrict to designs where
+#'   `e1 >= r`, guaranteeing that an interim efficacy declaration cannot be
+#'   overturned at the final analysis. Set to `FALSE` to include designs
+#'   without this constraint.
 #'
 #' @return A `data.frame` with one row per feasible design and columns
 #'   `n1`, `n`, `n2`, `r1`, `e1`, `r`, `p0`, `p1`, `alpha_actual`,
@@ -23,7 +27,8 @@
 #'   Returns an empty `data.frame` (with a message) when no designs are found.
 #' @export
 find_feasible_designs <- function(p0, p1, alpha, power,
-                                  n_max, n1_min = 5L) {
+                                  n_max, n1_min = 5L,
+                                  irrevocable = TRUE) {
   stopifnot(0 < p0, p0 < p1, p1 < 1,
             0 < alpha, alpha < 1,
             0 < power, power < 1,
@@ -39,12 +44,16 @@ find_feasible_designs <- function(p0, p1, alpha, power,
       # r ranges over possible final success thresholds
       for (r in 0L:n) {
 
-        # Irrevocability: e1 >= r, but e1 <= n1, so impossible when r > n1.
-        # Also skip r = 0: every trial succeeds trivially (type I error = 1).
-        if (r == 0L || r > n1) next
+        # Skip r = 0: every trial succeeds trivially (type I error = 1).
+        # When irrevocable, also skip r > n1: e1 >= r would require e1 > n1,
+        # which is impossible (e1 = n1+1 encodes no interim stop, not e1 > n1).
+        if (r == 0L) next
+        if (irrevocable && r > n1) next
 
-        # e1 in [r, n1+1]; n1+1 encodes "no interim efficacy stopping"
-        for (e1 in r:(n1 + 1L)) {
+        # e1 range: [r, n1+1] when irrevocable (enforces e1 >= r);
+        #           [0, n1+1] otherwise.
+        e1_min <- if (irrevocable) r else 0L
+        for (e1 in e1_min:(n1 + 1L)) {
 
           # r1 in {-1, 0, ..., e1-1}; -1 encodes "no futility stopping"
           for (r1 in (-1L):(e1 - 1L)) {
