@@ -62,13 +62,13 @@ Each design is defined by `(n1, n, r1, e1, r)`:
 
 ### User-facing documentation
 
-`vignettes/twostage.Rmd` is the primary worked-example guide. It covers: finding admissible designs, interpreting the Pareto frontier, searching without the irrevocability constraint (`irrevocable = FALSE`), restricting to Simon two-stage designs (`simon = TRUE`), and evaluating a single design with `evaluate_design()`.
+`vignettes/twostage.Rmd` is the primary worked-example guide. It covers: finding admissible designs, interpreting the Pareto frontier, restricting to irrevocable designs (`irrevocable = TRUE`), restricting to Simon two-stage designs (`simon = TRUE`), and evaluating a single design with `evaluate_design()`.
 
 ### Module responsibilities
 
 - **`R/design.R`** — thin R wrapper around `evaluate_design_cpp`. Computes `alpha_actual`, `power_actual`, `en_null`, `en_alt`, `is_irrevocable` for a single design. No input validation (caller's responsibility).
-- **`R/search.R`** — thin R wrapper around `find_feasible_designs_cpp`. Validates inputs, delegates the five nested loops to C++, emits a message when no designs are found. Returns a `data.frame`. Key options: `irrevocable` (enforce `e1 ≥ r`), `simon` (fix `e1 = n1+1`, no interim efficacy stop).
-- **`R/admissibility.R`** — thin R wrapper around `find_admissible_designs_cpp`. Returns the 3D Pareto frontier on `(n, en_null, en_alt)`: a design survives if no other design is weakly better on all three axes with at least one strict improvement. Sorting (by `en_null`) done in R.
+- **`R/search.R`** — thin R wrapper around `find_feasible_designs_cpp`. Validates inputs, delegates the five nested loops to C++, emits a message when no designs are found. Returns a `data.frame` with `n` first, `p0`/`p1` dropped, and row names reset. Key options: `irrevocable` (enforce `e1 ≥ r`), `simon` (fix `e1 = n1+1`, no interim efficacy stop).
+- **`R/admissibility.R`** — thin R wrapper around `find_admissible_designs_cpp`. Returns the 3D Pareto frontier on `(n, en_null, en_alt)`: a design survives if no other design is weakly better on all three axes with at least one strict improvement. Sorting (by `n` descending) and row-name reset done in R.
 - **`R/admissible_designs.R`** — top-level convenience function. Calls `find_feasible_designs` then `find_admissible_designs`, and labels the minimax design (min `n`, tie-break min `en_null`) and optimal design (min `en_null`, tie-break min `n`) via a `design_type` column. Accepts `irrevocable` and `simon` and passes them through.
 - **`src/twostage.cpp`** — C++ implementations (`evaluate_design_cpp`, `find_feasible_designs_cpp`, `find_admissible_designs_cpp`). Hot loops live here; binomial PMF cached per `n1` inside the search loop.
 
