@@ -14,8 +14,8 @@
 #' @param p1          Numeric in (0, 1). Alternative response rate (p1 > p0).
 #' @param alpha       Numeric in (0, 1). Maximum allowable type I error.
 #' @param power       Numeric in (0, 1). Minimum required power.
-#' @param n_max       Integer. Maximum total sample size to consider.
-#' @param n1_min      Integer. Minimum stage-1 sample size (default 5).
+#' @param n_max       Integer. Maximum total sample size to consider (default 50).
+#' @param n1_min      Integer. Minimum stage-1 sample size (default 1).
 #' @param irrevocable Logical. If `TRUE`, restrict to designs where `e1 >= r`,
 #'   guaranteeing that an interim efficacy declaration cannot be overturned at
 #'   the final analysis. Use `TRUE` when the interim efficacy stopping rule is
@@ -37,7 +37,7 @@
 #'                       n_max = 40L)
 #' @export
 find_feasible_designs <- function(p0, p1, alpha, power,
-                                  n_max, n1_min = 5L,
+                                  n_max = 50L, n1_min = 1L,
                                   irrevocable = FALSE,
                                   simon = FALSE) {
   stopifnot(0 < p0, p0 < p1, p1 < 1,
