@@ -11,7 +11,8 @@ admissible_designs(
   power,
   n_max,
   n1_min = 5L,
-  irrevocable = TRUE
+  irrevocable = TRUE,
+  simon = FALSE
 )
 }
 \arguments{
@@ -30,6 +31,12 @@ admissible_designs(
 \item{irrevocable}{Logical. If `TRUE` (default), restrict to designs where
 `e1 >= r`, so that an interim efficacy declaration cannot be overturned
 at the final analysis. Set to `FALSE` to search without this constraint.}
+
+\item{simon}{Logical. If `TRUE`, restrict to Simon two-stage designs,
+i.e. designs with no interim stopping for efficacy (`e1 = n1 + 1`).
+Default `FALSE`. When `simon = TRUE` the `irrevocable` argument has no
+effect: because there is no interim efficacy declaration, the
+irrevocability constraint is vacuously satisfied regardless of `r`.}
 }
 \value{
 A `data.frame` with one row per admissible design and columns
