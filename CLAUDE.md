@@ -29,6 +29,11 @@ devtools::load_all()
 Rscript examples/example_design.R
 ```
 
+**Build vignettes:**
+```bash
+Rscript -e 'devtools::build_vignettes()'
+```
+
 ## Architecture
 
 The package enumerates all admissible two-stage single-arm clinical trial designs for a binary endpoint. The pipeline is: **search → filter → Pareto-optimise**.
