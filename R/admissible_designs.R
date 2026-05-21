@@ -12,12 +12,12 @@
 #' @param power       Numeric in (0, 1). Minimum required power.
 #' @param n_max       Integer. Maximum total sample size to consider.
 #' @param n1_min      Integer. Minimum stage-1 sample size (default 5).
-#' @param irrevocable Logical. If `TRUE` (default), restrict to designs where
-#'   `e1 >= r`, so that an interim efficacy declaration cannot be overturned
-#'   at the final analysis. Use `TRUE` when the interim efficacy stopping rule
-#'   is **non-binding** (the trial may continue to stage 2 even after
-#'   `X1 >= e1`), so that the final decision remains coherent with the interim
-#'   declaration. Set to `FALSE` to search without this constraint.
+#' @param irrevocable Logical. If `TRUE`, restrict to designs where `e1 >= r`,
+#'   so that an interim efficacy declaration cannot be overturned at the final
+#'   analysis. Use `TRUE` when the interim efficacy stopping rule is
+#'   **non-binding** (the trial may continue to stage 2 even after `X1 >= e1`),
+#'   so that the final decision remains coherent with the interim declaration.
+#'   Default `FALSE`.
 #' @param simon Logical. If `TRUE`, restrict to Simon two-stage designs,
 #'   i.e. designs with no interim stopping for efficacy (`e1 = n1 + 1`).
 #'   Default `FALSE`. When `simon = TRUE` the `irrevocable` argument has no
@@ -46,7 +46,7 @@
 #' @export
 admissible_designs <- function(p0, p1, alpha, power,
                                n_max, n1_min = 5L,
-                               irrevocable = TRUE,
+                               irrevocable = FALSE,
                                simon = FALSE) {
   feasible  <- find_feasible_designs(p0, p1, alpha, power,
                                      n_max, n1_min, irrevocable, simon)

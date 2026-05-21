@@ -34,10 +34,12 @@ Each design is defined by five integers $(n_1, n, r_1, e_1, r)$:
 | $e_1$ | Interim efficacy boundary: declare success if $X_1 \ge e_1$ ($n_1+1$ = no interim efficacy stop) |
 | $r$ | Final success threshold: declare success if $X_1 + X_2 \ge r$ |
 
-By default an **irrevocability constraint** ($e_1 \ge r$) is enforced,
-guaranteeing that once interim efficacy is declared, no stage-2 outcome can
-overturn it (worst case $X_2 = 0$ still gives $X_1 + X_2 \ge e_1 \ge r$).
-Pass `irrevocable = FALSE` to search without this restriction.
+By default no irrevocability constraint is applied. Pass `irrevocable = TRUE`
+to restrict to designs where $e_1 \ge r$, guaranteeing that once interim
+efficacy is declared no stage-2 outcome can overturn it (worst case $X_2 = 0$
+still gives $X_1 + X_2 \ge e_1 \ge r$). This is appropriate when the interim
+efficacy stopping rule is **non-binding** — i.e. the trial may continue to
+stage 2 even after declaring interim success.
 
 ## Finding admissible designs
 
@@ -105,17 +107,18 @@ legend("topright",
        bty    = "n")
 ```
 
-## Searching without the irrevocability constraint
+## Restricting to irrevocable designs
 
-Set `irrevocable = FALSE` to include designs where the interim efficacy
-declaration could theoretically be overturned at the final analysis. The
-`is_irrevocable` column indicates which designs satisfy $e_1 \ge r$.
+Set `irrevocable = TRUE` to restrict to designs where the interim efficacy
+declaration cannot be overturned at the final analysis ($e_1 \ge r$). The
+`is_irrevocable` column indicates which designs satisfy this constraint.
 
-```{r irrev-false}
-result_all <- admissible_designs(p0, p1, alpha, power, n_max,
-                                 irrevocable = FALSE)
+```{r irrev-true}
+result_irrev <- admissible_designs(p0, p1, alpha, power, n_max,
+                                   irrevocable = TRUE)
 cat(sprintf("%d admissible designs total, %d irrevocable\n",
-            nrow(result_all), sum(result_all$is_irrevocable)))
+            nrow(result), sum(result$is_irrevocable)))
+cat(sprintf("%d admissible irrevocable designs\n", nrow(result_irrev)))
 ```
 
 ## Restricting to Simon two-stage designs

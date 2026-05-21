@@ -97,7 +97,8 @@ test_that("success probability matches manual computation in continuation region
 test_that("all returned designs satisfy constraints (irrevocable = TRUE)", {
   alpha <- 0.05; pw <- 0.80
   feasible <- find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = alpha,
-                                    power = pw, n_max = 25L)
+                                    power = pw, n_max = 25L,
+                                    irrevocable = TRUE)
   expect_gt(nrow(feasible), 0)
   expect_true(all(feasible$alpha_actual <= alpha + 1e-9))
   expect_true(all(feasible$power_actual >= pw     - 1e-9))

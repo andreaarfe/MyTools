@@ -11,7 +11,7 @@ find_feasible_designs(
   power,
   n_max,
   n1_min = 5L,
-  irrevocable = TRUE,
+  irrevocable = FALSE,
   simon = FALSE
 )
 }
@@ -28,13 +28,12 @@ find_feasible_designs(
 
 \item{n1_min}{Integer. Minimum stage-1 sample size (default 5).}
 
-\item{irrevocable}{Logical. If `TRUE` (default), restrict to designs where
-`e1 >= r`, guaranteeing that an interim efficacy declaration cannot be
-overturned at the final analysis. Use `TRUE` when the interim efficacy
-stopping rule is \strong{non-binding} (the trial may continue to stage 2
-even after `X1 >= e1`), so that the final decision remains coherent with
-the interim declaration. Set to `FALSE` to include designs without this
-constraint.}
+\item{irrevocable}{Logical. If `TRUE`, restrict to designs where `e1 >= r`,
+guaranteeing that an interim efficacy declaration cannot be overturned at
+the final analysis. Use `TRUE` when the interim efficacy stopping rule is
+\strong{non-binding} (the trial may continue to stage 2 even after
+`X1 >= e1`), so that the final decision remains coherent with the interim
+declaration. Default `FALSE`.}
 
 \item{simon}{Logical. If `TRUE`, restrict to Simon two-stage designs,
 i.e. designs with no interim stopping for efficacy (`e1 = n1 + 1`).
