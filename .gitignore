@@ -4,3 +4,7 @@
 vignettes/.build.timestamp
 vignettes/*.R
 vignettes/*_files/
+src/*.o
+src/*.so
+src/*.dll
+src/*.dylib

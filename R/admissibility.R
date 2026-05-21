@@ -15,22 +15,9 @@
 find_admissible_designs <- function(designs) {
   if (nrow(designs) == 0L) return(designs)
 
-  nm  <- designs$n
-  en0 <- designs$en_null
-  en1 <- designs$en_alt
-  m   <- nrow(designs)
-  keep <- rep(TRUE, m)
-
-  for (i in seq_len(m)) {
-    if (!keep[i]) next
-    # Check whether any j dominates i on all three axes
-    dominated <- any(
-      keep & seq_len(m) != i &
-        nm  <= nm[i]  & en0 <= en0[i] & en1 <= en1[i] &
-        (nm  < nm[i]  | en0 < en0[i]  | en1 < en1[i])
-    )
-    if (dominated) keep[i] <- FALSE
-  }
-
-  designs[keep, ][order(designs$en_null[keep]), ]
+  keep <- find_admissible_designs_cpp(as.integer(designs$n),
+                                      as.numeric(designs$en_null),
+                                      as.numeric(designs$en_alt))
+  kept <- designs[keep, , drop = FALSE]
+  kept[order(kept$en_null), , drop = FALSE]
 }
