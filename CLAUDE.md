@@ -34,6 +34,11 @@ Rscript examples/example_design.R
 Rscript -e 'devtools::build_vignettes()'
 ```
 
+**After editing `src/twostage.cpp`** (regenerates R/RcppExports.R and src/RcppExports.cpp):
+```bash
+Rscript -e 'Rcpp::compileAttributes()'
+```
+
 ## Architecture
 
 The package enumerates all admissible two-stage single-arm clinical trial designs for a binary endpoint. The pipeline is: **search → filter → Pareto-optimise**.
@@ -51,9 +56,11 @@ Each design is defined by `(n1, n, r1, e1, r)`:
 ### Module responsibilities
 
 - **`R/distributions.R`** — stateless wrappers: `binom_pmf`, `binom_cdf`, `binom_upper`. Use `pbinom(..., lower.tail = FALSE)` for numerical stability.
-- **`R/design.R`** — `evaluate_design(n1, n, r1, e1, r, p0, p1)` computes `alpha_actual`, `power_actual`, `en_null`, `en_alt`, `is_irrevocable`. Returns a named list; no validation (caller filters).
-- **`R/search.R`** — `find_feasible_designs(p0, p1, alpha, power, n_max)` loops over all `(n, n1, r, e1, r1)` combinations. Key pruning: skip `r > n1` because `e1 ≤ n1 < r` would violate irrevocability for all `e1`. Returns a `data.frame`.
-- **`R/admissibility.R`** — `find_admissible_designs(designs)` returns the Pareto frontier on `(en_null, en_alt)`: a design survives if no other design is ≤ on both axes with at least one strict inequality.
+- **`R/design.R`** — thin R wrapper around `evaluate_design_cpp`. Computes `alpha_actual`, `power_actual`, `en_null`, `en_alt`, `is_irrevocable` for a single design. No input validation (caller's responsibility).
+- **`R/search.R`** — thin R wrapper around `find_feasible_designs_cpp`. Validates inputs, delegates the five nested loops to C++, emits a message when no designs are found. Returns a `data.frame`.
+- **`R/admissibility.R`** — thin R wrapper around `find_admissible_designs_cpp`. Returns the 3D Pareto frontier on `(n, en_null, en_alt)`: a design survives if no other design is weakly better on all three axes with at least one strict improvement. Sorting (by `en_null`) done in R.
+- **`R/admissible_designs.R`** — top-level convenience function. Calls `find_feasible_designs` then `find_admissible_designs`, and labels the minimax design (min `n`, tie-break min `en_null`) and optimal design (min `en_null`, tie-break min `n`) via a `design_type` column.
+- **`src/twostage.cpp`** — C++ implementations (`evaluate_design_cpp`, `find_feasible_designs_cpp`, `find_admissible_designs_cpp`). Hot loops live here; binomial PMF cached per `n1` inside the search loop.
 
 ### Known sharp edge
 
