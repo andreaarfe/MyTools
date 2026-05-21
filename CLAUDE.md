@@ -60,6 +60,10 @@ Each design is defined by `(n1, n, r1, e1, r)`:
 
 **Simon two-stage designs:** `e1 = n1+1` (no interim efficacy stop). Pass `simon = TRUE` to restrict the search to this class. When `simon = TRUE`, `irrevocable` has no effect — irrevocability is vacuously satisfied because there is never an interim efficacy declaration.
 
+### User-facing documentation
+
+`vignettes/twostage.Rmd` is the primary worked-example guide. It covers: finding admissible designs, interpreting the Pareto frontier, searching without the irrevocability constraint (`irrevocable = FALSE`), restricting to Simon two-stage designs (`simon = TRUE`), and evaluating a single design with `evaluate_design()`.
+
 ### Module responsibilities
 
 - **`R/distributions.R`** — stateless wrappers: `binom_pmf`, `binom_cdf`, `binom_upper`. Use `pbinom(..., lower.tail = FALSE)` for numerical stability.
