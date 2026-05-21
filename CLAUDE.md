@@ -34,6 +34,11 @@ Rscript examples/example_design.R
 Rscript -e 'devtools::build_vignettes()'
 ```
 
+**After editing Roxygen comments in any `R/*.R` file** (regenerates `man/*.Rd`):
+```bash
+Rscript -e 'devtools::document()'
+```
+
 **After editing `src/twostage.cpp`** (regenerates R/RcppExports.R and src/RcppExports.cpp):
 ```bash
 Rscript -e 'Rcpp::compileAttributes()'
