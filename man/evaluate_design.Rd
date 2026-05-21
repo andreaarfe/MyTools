@@ -25,14 +25,14 @@ Use n1 + 1 for no interim efficacy stopping.}
 }
 \value{
 A named list with elements:
-  \describe{
-    \item{n1, n, n2, r1, e1, r, p0, p1}{Design parameters (n2 = n - n1).}
-    \item{alpha_actual}{Achieved type I error under p0.}
-    \item{power_actual}{Achieved power under p1.}
-    \item{en_null}{Expected sample size under p0.}
-    \item{en_alt}{Expected sample size under p1.}
-    \item{is_irrevocable}{Logical; TRUE when e1 >= r.}
-  }
+\describe{
+\item{n1, n, n2, r1, e1, r, p0, p1}{Design parameters (n2 = n - n1).}
+\item{alpha_actual}{Achieved type I error under p0.}
+\item{power_actual}{Achieved power under p1.}
+\item{en_null}{Expected sample size under p0.}
+\item{en_alt}{Expected sample size under p1.}
+\item{is_irrevocable}{Logical; TRUE when e1 >= r.}
+}
 }
 \examples{
 evaluate_design(n1 = 15L, n = 25L, r1 = 0L, e1 = 9L, r = 5L,
@@ -45,14 +45,20 @@ binary endpoint.
 }
 \details{
 Decision rules:
-- **Stage 1** (X1 ~ Binomial(n1, p)):
-  - X1 <= r1: stop for futility (`r1 = -1` disables futility stopping).
-  - X1 >= e1: declare efficacy (`e1 = n1 + 1` disables interim efficacy stop).
-  - Otherwise: continue to stage 2.
-- **Stage 2** (X2 ~ Binomial(n2, p), independent of X1):
-  - X1 + X2 >= r: declare success.
+\itemize{
+\item \strong{Stage 1} (X1 ~ Binomial(n1, p)):
+\itemize{
+\item X1 <= r1: stop for futility (\code{r1 = -1} disables futility stopping).
+\item X1 >= e1: declare efficacy (\code{e1 = n1 + 1} disables interim efficacy stop).
+\item Otherwise: continue to stage 2.
+}
+\item \strong{Stage 2} (X2 ~ Binomial(n2, p), independent of X1):
+\itemize{
+\item X1 + X2 >= r: declare success.
+}
+}
 
-The irrevocability constraint `e1 >= r` guarantees that interim efficacy
+The irrevocability constraint \code{e1 >= r} guarantees that interim efficacy
 cannot be overturned by stage 2 (worst case X2 = 0 still gives
 X1 + X2 >= e1 >= r).
 }

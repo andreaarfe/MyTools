@@ -28,46 +28,47 @@ admissible_designs(
 
 \item{n1_min}{Integer. Minimum stage-1 sample size (default 5).}
 
-\item{irrevocable}{Logical. If `TRUE`, restrict to designs where `e1 >= r`,
+\item{irrevocable}{Logical. If \code{TRUE}, restrict to designs where \code{e1 >= r},
 so that an interim efficacy declaration cannot be overturned at the final
-analysis. Use `TRUE` when the interim efficacy stopping rule is
-\strong{non-binding} (the trial may continue to stage 2 even after
-`X1 >= e1`), so that the final decision remains coherent with the interim
-declaration. Default `FALSE`.}
+analysis. Use \code{TRUE} when the interim efficacy stopping rule is
+\strong{non-binding} (the trial may continue to stage 2 even after \code{X1 >= e1}),
+so that the final decision remains coherent with the interim declaration.
+Default \code{FALSE}.}
 
-\item{simon}{Logical. If `TRUE`, restrict to Simon two-stage designs,
-i.e. designs with no interim stopping for efficacy (`e1 = n1 + 1`).
-Default `FALSE`. When `simon = TRUE` the `irrevocable` argument has no
+\item{simon}{Logical. If \code{TRUE}, restrict to Simon two-stage designs,
+i.e. designs with no interim stopping for efficacy (\code{e1 = n1 + 1}).
+Default \code{FALSE}. When \code{simon = TRUE} the \code{irrevocable} argument has no
 effect: because there is no interim efficacy declaration, the
-irrevocability constraint is vacuously satisfied regardless of `r`.}
+irrevocability constraint is vacuously satisfied regardless of \code{r}.}
 }
 \value{
-A `data.frame` with one row per admissible design and columns
-  `n`, `n1`, `n2`, `r1`, `e1`, `r`, `alpha_actual`,
-  `power_actual`, `en_null`, `en_alt`, `is_irrevocable`, and `design_type`.
-  The `design_type` column is a character vector with values:
-  \describe{
-    \item{`"minimax"`}{The admissible design with the smallest `n`
-      (ties broken by `en_null`).}
-    \item{`"optimal"`}{The admissible design with the smallest `en_null`
-      (ties broken by `n`).}
-    \item{`"minimax, optimal"`}{A design that is simultaneously minimax and
-      optimal.}
-    \item{`""`}{All other admissible designs.}
-  }
-  Returns an empty `data.frame` when no feasible designs are found.
+A \code{data.frame} with one row per admissible design and columns
+\code{n}, \code{n1}, \code{n2}, \code{r1}, \code{e1}, \code{r}, \code{alpha_actual},
+\code{power_actual}, \code{en_null}, \code{en_alt}, \code{is_irrevocable}, and \code{design_type}.
+The \code{design_type} column is a character vector with values:
+\describe{
+\item{\code{"minimax"}}{The admissible design with the smallest \code{n}
+(ties broken by \code{en_null}).}
+\item{\code{"optimal"}}{The admissible design with the smallest \code{en_null}
+(ties broken by \code{n}).}
+\item{\code{"minimax, optimal"}}{A design that is simultaneously minimax and
+optimal.}
+\item{\code{""}}{All other admissible designs.}
+}
+Returns an empty \code{data.frame} when no feasible designs are found.
 }
 \description{
-Combines [find_feasible_designs()] and [find_admissible_designs()] into a
-single call. Returns the Pareto-optimal designs on three criteria —
-maximum sample size (`n`), expected sample size under the null (`en_null`),
-and expected sample size under the alternative (`en_alt`) — and labels the
-**minimax** (minimum `n`) and **optimal** (minimum `en_null`) designs.
+Combines \code{\link{find_feasible_designs}} and
+\code{\link{find_admissible_designs}} into a single call. Returns the
+Pareto-optimal designs on three criteria — maximum sample size (\code{n}),
+expected sample size under the null (\code{en_null}), and expected sample size
+under the alternative (\code{en_alt}) — and labels the \strong{minimax}
+(minimum \code{n}) and \strong{optimal} (minimum \code{en_null}) designs.
 }
 \examples{
 admissible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
                    n_max = 40L)
 }
 \seealso{
-[find_feasible_designs()], [find_admissible_designs()]
+\code{\link{find_feasible_designs}}, \code{\link{find_admissible_designs}}
 }
