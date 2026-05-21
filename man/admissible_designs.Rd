@@ -30,7 +30,10 @@ admissible_designs(
 
 \item{irrevocable}{Logical. If `TRUE` (default), restrict to designs where
 `e1 >= r`, so that an interim efficacy declaration cannot be overturned
-at the final analysis. Set to `FALSE` to search without this constraint.}
+at the final analysis. Use `TRUE` when the interim efficacy stopping rule
+is \strong{non-binding} (the trial may continue to stage 2 even after
+`X1 >= e1`), so that the final decision remains coherent with the interim
+declaration. Set to `FALSE` to search without this constraint.}
 
 \item{simon}{Logical. If `TRUE`, restrict to Simon two-stage designs,
 i.e. designs with no interim stopping for efficacy (`e1 = n1 + 1`).

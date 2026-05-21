@@ -56,7 +56,7 @@ Each design is defined by `(n1, n, r1, e1, r)`:
 - `e1`: interim efficacy boundary — declare success if `X1 ≥ e1` (`n1+1` = no interim stop)
 - `r`: final success threshold — success if `X1 + X2 ≥ r`
 
-**Irrevocability constraint:** `e1 ≥ r` — guarantees that once interim efficacy is declared, no stage-2 outcome can overturn it (worst case: X2 = 0, so X1 + X2 = X1 ≥ e1 ≥ r). Enforced when `irrevocable = TRUE` (default).
+**Irrevocability constraint:** `e1 ≥ r` — guarantees that once interim efficacy is declared, no stage-2 outcome can overturn it (worst case: X2 = 0, so X1 + X2 = X1 ≥ e1 ≥ r). Enforced when `irrevocable = TRUE` (default). Use `TRUE` when the interim efficacy stopping rule is **non-binding** (the trial may continue to stage 2 even after X1 ≥ e1), so that the final decision remains coherent with the interim declaration.
 
 **Simon two-stage designs:** `e1 = n1+1` (no interim efficacy stop). Pass `simon = TRUE` to restrict the search to this class. When `simon = TRUE`, `irrevocable` has no effect — irrevocability is vacuously satisfied because there is never an interim efficacy declaration.
 
