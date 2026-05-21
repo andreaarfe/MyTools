@@ -2,3 +2,5 @@
 ^LICENSE\.md$
 ^examples$
 ^\.git$
+^doc$
+^Meta$
