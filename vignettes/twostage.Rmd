@@ -1,0 +1,130 @@
+---
+title: "Finding Admissible Two-Stage Trial Designs"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Finding Admissible Two-Stage Trial Designs}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(twostage)
+```
+
+## Overview
+
+The **twostage** package enumerates admissible two-stage single-arm trial
+designs for a binary endpoint. It is aimed at early-phase oncology studies
+where a Simon-like design is needed but the full Pareto frontier — not just
+the minimax or optimal design — is of interest.
+
+The workflow has three steps:
+
+1. Specify the null/alternative response rates and error constraints.
+2. Call `find_feasible_designs()` to enumerate all designs that meet them.
+3. Call `find_admissible_designs()` to retain only Pareto-optimal designs.
+
+## Design parameters
+
+Each design is defined by five integers $(n_1, n, r_1, e_1, r)$:
+
+| Parameter | Role |
+|-----------|------|
+| $n_1$ | Stage-1 sample size |
+| $n$ | Total sample size ($n_2 = n - n_1$ enrolled in stage 2) |
+| $r_1$ | Futility boundary: stop early if $X_1 \le r_1$ ($-1$ = no futility stop) |
+| $e_1$ | Interim efficacy boundary: declare success if $X_1 \ge e_1$ ($n_1+1$ = no interim efficacy stop) |
+| $r$ | Final success threshold: declare success if $X_1 + X_2 \ge r$ |
+
+An **irrevocability constraint** is enforced: $e_1 \ge r$. This guarantees
+that once interim efficacy is declared, no stage-2 outcome can overturn it
+(worst case $X_2 = 0$ still gives $X_1 + X_2 \ge e_1 \ge r$).
+
+## Step 1 — Choose the design constraints
+
+Suppose the null response rate is $p_0 = 0.10$ and the target alternative is
+$p_1 = 0.30$. We want at most 5% type I error and at least 80% power, with
+total sample size no larger than 40.
+
+```{r constraints}
+p0    <- 0.10
+p1    <- 0.30
+alpha <- 0.05
+power <- 0.80
+n_max <- 40L
+```
+
+## Step 2 — Enumerate feasible designs
+
+`find_feasible_designs()` performs an exhaustive search over all parameter
+combinations and returns a data frame of designs that satisfy all constraints.
+
+```{r feasible}
+feasible <- find_feasible_designs(p0, p1, alpha, power, n_max)
+nrow(feasible)
+```
+
+Each row is one design. The key columns are:
+
+```{r feasible-peek}
+head(feasible[, c("n1", "n", "r1", "e1", "r",
+                  "alpha_actual", "power_actual",
+                  "en_null", "en_alt")])
+```
+
+## Step 3 — Find admissible designs
+
+Most feasible designs are dominated: there exists another design with a
+smaller expected sample size under *both* the null and the alternative.
+`find_admissible_designs()` filters to the Pareto frontier on
+$(EN_0, EN_1)$.
+
+```{r admissible}
+admissible <- find_admissible_designs(feasible)
+nrow(admissible)
+```
+
+```{r admissible-table}
+out <- admissible[, c("n1", "n", "r1", "e1", "r",
+                      "alpha_actual", "power_actual",
+                      "en_null", "en_alt")]
+out$alpha_actual <- round(out$alpha_actual, 4)
+out$power_actual <- round(out$power_actual, 4)
+out$en_null      <- round(out$en_null, 2)
+out$en_alt       <- round(out$en_alt, 2)
+print(out, row.names = FALSE)
+```
+
+Every admissible design satisfies the irrevocability constraint:
+
+```{r irrevocable}
+all(admissible$is_irrevocable)
+```
+
+## Interpreting the Pareto frontier
+
+The admissible designs trade off $EN_0$ (expected $n$ when the drug is
+inactive — the more common scenario) against $EN_1$ (expected $n$ when the
+drug is active). Designs at the top-left of the frontier minimise $EN_0$ at
+the cost of a larger $EN_1$; those at the bottom-right do the opposite.
+
+```{r pareto-plot, fig.width = 5.5, fig.height = 4, fig.alt = "Scatter plot of EN_null vs EN_alt for admissible designs"}
+plot(admissible$en_null, admissible$en_alt,
+     xlab = expression(EN[0] ~ "(under null)"),
+     ylab = expression(EN[1] ~ "(under alternative)"),
+     main = "Pareto frontier of admissible designs",
+     pch  = 19, col = "steelblue")
+```
+
+## Evaluating a single design
+
+`evaluate_design()` computes the operating characteristics for one design
+without running the full search. This is useful for checking a design
+proposed on external grounds (e.g. a published Simon design).
+
+```{r evaluate}
+d <- evaluate_design(n1 = 15L, n = 25L, r1 = 0L, e1 = 9L, r = 5L,
+                     p0 = p0, p1 = p1)
+str(d)
+```
