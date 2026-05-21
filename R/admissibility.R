@@ -11,6 +11,10 @@
 #'
 #' @return A `data.frame` of admissible designs sorted by `en_null` ascending.
 #'   Returns `designs` unchanged (empty) when the input has zero rows.
+#' @examples
+#' feasible <- find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05,
+#'                                   power = 0.80, n_max = 40L)
+#' find_admissible_designs(feasible)
 #' @export
 find_admissible_designs <- function(designs) {
   if (nrow(designs) == 0L) return(designs)

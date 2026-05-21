@@ -35,6 +35,9 @@
 #'     \item{en_alt}{Expected sample size under p1.}
 #'     \item{is_irrevocable}{Logical; TRUE when e1 >= r.}
 #'   }
+#' @examples
+#' evaluate_design(n1 = 15L, n = 25L, r1 = 0L, e1 = 9L, r = 5L,
+#'                 p0 = 0.10, p1 = 0.30)
 #' @export
 evaluate_design <- function(n1, n, r1, e1, r, p0, p1) {
   evaluate_design_cpp(as.integer(n1), as.integer(n), as.integer(r1),

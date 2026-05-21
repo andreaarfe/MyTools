@@ -34,6 +34,10 @@ A named list with elements:
     \item{is_irrevocable}{Logical; TRUE when e1 >= r.}
   }
 }
+\examples{
+evaluate_design(n1 = 15L, n = 25L, r1 = 0L, e1 = 9L, r = 5L,
+                p0 = 0.10, p1 = 0.30)
+}
 \description{
 Computes type I error, power, and expected sample sizes under the null and
 alternative hypotheses for a candidate two-stage single-arm design with a

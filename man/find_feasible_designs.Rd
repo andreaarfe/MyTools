@@ -45,6 +45,10 @@ A `data.frame` with one row per feasible design and columns
   `power_actual`, `en_null`, `en_alt`, `is_irrevocable`.
   Returns an empty `data.frame` (with a message) when no designs are found.
 }
+\examples{
+find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
+                      n_max = 40L)
+}
 \description{
 Exhaustively searches over all combinations of (n, n1, r, e1, r1) with
 total sample size up to `n_max` and returns designs that satisfy the type I

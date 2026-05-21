@@ -37,6 +37,9 @@
 #'   Returns an empty `data.frame` when no feasible designs are found.
 #'
 #' @seealso [find_feasible_designs()], [find_admissible_designs()]
+#' @examples
+#' admissible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
+#'                    n_max = 40L)
 #' @export
 admissible_designs <- function(p0, p1, alpha, power,
                                n_max, n1_min = 5L,

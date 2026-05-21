@@ -61,6 +61,10 @@ maximum sample size (`n`), expected sample size under the null (`en_null`),
 and expected sample size under the alternative (`en_alt`) — and labels the
 **minimax** (minimum `n`) and **optimal** (minimum `en_null`) designs.
 }
+\examples{
+admissible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
+                   n_max = 40L)
+}
 \seealso{
 [find_feasible_designs()], [find_admissible_designs()]
 }

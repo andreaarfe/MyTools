@@ -30,6 +30,9 @@
 #'   `n1`, `n`, `n2`, `r1`, `e1`, `r`, `p0`, `p1`, `alpha_actual`,
 #'   `power_actual`, `en_null`, `en_alt`, `is_irrevocable`.
 #'   Returns an empty `data.frame` (with a message) when no designs are found.
+#' @examples
+#' find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
+#'                       n_max = 40L)
 #' @export
 find_feasible_designs <- function(p0, p1, alpha, power,
                                   n_max, n1_min = 5L,
