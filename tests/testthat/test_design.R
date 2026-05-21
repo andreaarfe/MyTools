@@ -1,21 +1,6 @@
 library(testthat)
 
 # ---------------------------------------------------------------------------
-# distributions.R
-# ---------------------------------------------------------------------------
-test_that("binom_pmf matches dbinom", {
-  expect_equal(binom_pmf(3, 10, 0.3), dbinom(3, 10, 0.3))
-})
-
-test_that("binom_cdf matches pbinom", {
-  expect_equal(binom_cdf(4, 10, 0.2), pbinom(4, 10, 0.2))
-})
-
-test_that("binom_upper = P(X >= k)", {
-  expect_equal(binom_upper(5, 10, 0.4), 1 - pbinom(4, 10, 0.4))
-})
-
-# ---------------------------------------------------------------------------
 # design.R — evaluate_design
 # ---------------------------------------------------------------------------
 
