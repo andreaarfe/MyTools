@@ -70,5 +70,5 @@ twostage_admissible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
                             n_max = 40L)
 }
 \seealso{
-\code{\link[=twostage_find_feasible_designs]{twostage_find_feasible_designs()}}, \code{\link[=twostage_find_admissible_designs]{twostage_find_admissible_designs()}}
+\code{\link[=twostage_find_feasible_designs]{twostage_find_feasible_designs()}}
 }

@@ -102,7 +102,7 @@ test_that("irrevocable=TRUE is a subset of irrevocable=FALSE", {
 test_that("admissible set is a subset of feasible designs", {
   feasible   <- twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                       power = 0.80, n_max = 25L)
-  admissible <- twostage_find_admissible_designs(feasible)
+  admissible <- MyTools:::twostage_find_admissible_designs(feasible)
   expect_lte(nrow(admissible), nrow(feasible))
   keys_adm <- paste(admissible$n1, admissible$n, admissible$r1,
                     admissible$e1, admissible$r)
@@ -114,7 +114,7 @@ test_that("admissible set is a subset of feasible designs", {
 test_that("no admissible design is dominated by another admissible design", {
   feasible   <- twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                       power = 0.80, n_max = 25L)
-  admissible <- twostage_find_admissible_designs(feasible)
+  admissible <- MyTools:::twostage_find_admissible_designs(feasible)
   m   <- nrow(admissible)
   nm  <- admissible$n
   en0 <- admissible$en_null
@@ -141,7 +141,7 @@ test_that("admissible set from synthetic designs has correct Pareto frontier", {
   designs <- rbind(make_row(15, 12),   # D1 — dominated by D2
                    make_row(14, 11),   # D2 — dominates D1
                    make_row(13, 13))   # D3 — on frontier
-  adm <- twostage_find_admissible_designs(designs)
+  adm <- MyTools:::twostage_find_admissible_designs(designs)
   expect_equal(nrow(adm), 2L)
   expect_true(all(adm$en_null %in% c(14, 13)))
 })
@@ -156,7 +156,7 @@ test_that("identical (n, en_null, en_alt) triples are all retained", {
                en_null=14, en_alt=12, is_irrevocable=TRUE)
   }
   designs <- rbind(make_row(), make_row())
-  adm <- twostage_find_admissible_designs(designs)
+  adm <- MyTools:::twostage_find_admissible_designs(designs)
   expect_equal(nrow(adm), 2L)
 })
 
@@ -170,7 +170,7 @@ test_that("identical triples kept; a dominator eliminates all copies", {
   designs <- rbind(make_row(15, 12),  # dominated, copy 1
                    make_row(15, 12),  # dominated, copy 2
                    make_row(13, 11))  # dominator
-  adm <- twostage_find_admissible_designs(designs)
+  adm <- MyTools:::twostage_find_admissible_designs(designs)
   expect_equal(nrow(adm), 1L)
   expect_equal(adm$en_null, 13)
   expect_equal(adm$en_alt,  11)
@@ -187,7 +187,7 @@ test_that("3D admissible set retains designs with small n even if worse on EN ax
   }
   designs <- rbind(make_row(18, 15, 14),  # D1 — small n, worse EN axes
                    make_row(25, 13, 12))  # D2 — large n, better EN axes
-  adm <- twostage_find_admissible_designs(designs)
+  adm <- MyTools:::twostage_find_admissible_designs(designs)
   expect_equal(nrow(adm), 2L)  # both survive 3D Pareto
 })
 

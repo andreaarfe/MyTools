@@ -1,4 +1,4 @@
-#' Filter designs to the Pareto frontier on sample size and expected sample sizes
+#' Filter designs to the 3D Pareto frontier (internal)
 #'
 #' Retains only admissible (Pareto-optimal) designs with respect to three
 #' criteria: maximum sample size (`n`), expected sample size under the null
@@ -6,16 +6,13 @@
 #' A design is admissible if no other design is weakly better on all three
 #' axes with at least one strict improvement.
 #'
-#' @param designs A `data.frame` as returned by [twostage_find_feasible_designs()],
-#'   containing at least columns `n`, `en_null`, and `en_alt`.
+#' Used internally by [twostage_admissible_designs()]. Not exported; users
+#' should call [twostage_admissible_designs()] instead.
 #'
+#' @param designs A `data.frame` with at least columns `n`, `en_null`, and `en_alt`.
 #' @return A `data.frame` of admissible designs sorted by `n` descending.
 #'   Returns `designs` unchanged (empty) when the input has zero rows.
-#' @examples
-#' feasible <- twostage_find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05,
-#'                                            power = 0.80, n_max = 40L)
-#' twostage_find_admissible_designs(feasible)
-#' @export
+#' @keywords internal
 twostage_find_admissible_designs <- function(designs) {
   if (nrow(designs) == 0L) return(designs)
 

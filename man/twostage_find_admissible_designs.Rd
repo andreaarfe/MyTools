@@ -2,13 +2,12 @@
 % Please edit documentation in R/twostage-admissibility.R
 \name{twostage_find_admissible_designs}
 \alias{twostage_find_admissible_designs}
-\title{Filter designs to the Pareto frontier on sample size and expected sample sizes}
+\title{Filter designs to the 3D Pareto frontier (internal)}
 \usage{
 twostage_find_admissible_designs(designs)
 }
 \arguments{
-\item{designs}{A \code{data.frame} as returned by \code{\link[=twostage_find_feasible_designs]{twostage_find_feasible_designs()}},
-containing at least columns \code{n}, \code{en_null}, and \code{en_alt}.}
+\item{designs}{A \code{data.frame} with at least columns \code{n}, \code{en_null}, and \code{en_alt}.}
 }
 \value{
 A \code{data.frame} of admissible designs sorted by \code{n} descending.
@@ -21,8 +20,8 @@ criteria: maximum sample size (\code{n}), expected sample size under the null
 A design is admissible if no other design is weakly better on all three
 axes with at least one strict improvement.
 }
-\examples{
-feasible <- twostage_find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05,
-                                           power = 0.80, n_max = 40L)
-twostage_find_admissible_designs(feasible)
+\details{
+Used internally by \code{\link[=twostage_admissible_designs]{twostage_admissible_designs()}}. Not exported; users
+should call \code{\link[=twostage_admissible_designs]{twostage_admissible_designs()}} instead.
 }
+\keyword{internal}
