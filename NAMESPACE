@@ -2,6 +2,5 @@
 
 export(twostage_admissible_designs)
 export(twostage_evaluate_design)
-export(twostage_find_feasible_designs)
 importFrom(Rcpp,sourceCpp)
 useDynLib(MyTools, .registration = TRUE)

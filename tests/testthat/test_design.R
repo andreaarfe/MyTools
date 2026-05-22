@@ -59,12 +59,12 @@ test_that("success probability matches manual computation in continuation region
 })
 
 # ---------------------------------------------------------------------------
-# twostage-search.R — twostage_find_feasible_designs
+# twostage-search.R — MyTools:::twostage_find_feasible_designs
 # ---------------------------------------------------------------------------
 
 test_that("all returned designs satisfy constraints (irrevocable = TRUE)", {
   alpha <- 0.05; pw <- 0.80
-  feasible <- twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = alpha,
+  feasible <- MyTools:::twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = alpha,
                                     power = pw, n_max = 25L,
                                     irrevocable = TRUE)
   expect_gt(nrow(feasible), 0)
@@ -75,7 +75,7 @@ test_that("all returned designs satisfy constraints (irrevocable = TRUE)", {
 })
 
 test_that("irrevocable=FALSE returns designs with e1 < r", {
-  feasible <- twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  feasible <- MyTools:::twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                     power = 0.80, n_max = 25L,
                                     irrevocable = FALSE)
   expect_gt(nrow(feasible), 0)
@@ -88,8 +88,8 @@ test_that("irrevocable=FALSE returns designs with e1 < r", {
 
 test_that("irrevocable=TRUE is a subset of irrevocable=FALSE", {
   args <- list(p0 = 0.1, p1 = 0.3, alpha = 0.05, power = 0.80, n_max = 20L)
-  f_irrev  <- do.call(twostage_find_feasible_designs, c(args, irrevocable = TRUE))
-  f_all    <- do.call(twostage_find_feasible_designs, c(args, irrevocable = FALSE))
+  f_irrev  <- do.call(MyTools:::twostage_find_feasible_designs, c(args, irrevocable = TRUE))
+  f_all    <- do.call(MyTools:::twostage_find_feasible_designs, c(args, irrevocable = FALSE))
   keys <- function(d) paste(d$n1, d$n, d$r1, d$e1, d$r)
   expect_true(all(keys(f_irrev) %in% keys(f_all)))
   expect_lte(nrow(f_irrev), nrow(f_all))
@@ -100,7 +100,7 @@ test_that("irrevocable=TRUE is a subset of irrevocable=FALSE", {
 # ---------------------------------------------------------------------------
 
 test_that("admissible set is a subset of feasible designs", {
-  feasible   <- twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  feasible   <- MyTools:::twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                       power = 0.80, n_max = 25L)
   admissible <- MyTools:::twostage_find_admissible_designs(feasible)
   expect_lte(nrow(admissible), nrow(feasible))
@@ -112,7 +112,7 @@ test_that("admissible set is a subset of feasible designs", {
 })
 
 test_that("no admissible design is dominated by another admissible design", {
-  feasible   <- twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  feasible   <- MyTools:::twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                       power = 0.80, n_max = 25L)
   admissible <- MyTools:::twostage_find_admissible_designs(feasible)
   m   <- nrow(admissible)
@@ -241,7 +241,7 @@ test_that("admissible_designs with irrevocable=FALSE includes non-irrevocable de
 # ---------------------------------------------------------------------------
 
 test_that("simon=TRUE returns only designs with e1 = n1 + 1", {
-  feasible <- twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  feasible <- MyTools:::twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                     power = 0.80, n_max = 25L, simon = TRUE)
   expect_gt(nrow(feasible), 0)
   expect_true(all(feasible$e1 == feasible$n1 + 1L))
@@ -249,9 +249,9 @@ test_that("simon=TRUE returns only designs with e1 = n1 + 1", {
 
 test_that("simon=TRUE designs are a subset of all feasible designs", {
   args <- list(p0 = 0.1, p1 = 0.3, alpha = 0.05, power = 0.80, n_max = 20L)
-  f_simon <- do.call(twostage_find_feasible_designs, c(args, simon = TRUE,
+  f_simon <- do.call(MyTools:::twostage_find_feasible_designs, c(args, simon = TRUE,
                                               irrevocable = FALSE))
-  f_all   <- do.call(twostage_find_feasible_designs, c(args, irrevocable = FALSE))
+  f_all   <- do.call(MyTools:::twostage_find_feasible_designs, c(args, irrevocable = FALSE))
   keys <- function(d) paste(d$n1, d$n, d$r1, d$e1, d$r)
   expect_true(all(keys(f_simon) %in% keys(f_all)))
   expect_lte(nrow(f_simon), nrow(f_all))

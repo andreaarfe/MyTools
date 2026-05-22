@@ -1,6 +1,6 @@
 Package: MyTools
 Title: Statistical and Clinical-Trial Utilities
-Version: 0.4.0
+Version: 0.5.0
 Authors@R: person("Andrea", "Arfe", email = "andrea.arfe@gmail.com",
                   role = c("aut", "cre"))
 Description: A collection of R utilities for statistical and clinical-trial

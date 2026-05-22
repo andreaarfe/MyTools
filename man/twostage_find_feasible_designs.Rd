@@ -2,7 +2,7 @@
 % Please edit documentation in R/twostage-search.R
 \name{twostage_find_feasible_designs}
 \alias{twostage_find_feasible_designs}
-\title{Enumerate all feasible two-stage designs}
+\title{Enumerate all feasible two-stage designs (internal)}
 \usage{
 twostage_find_feasible_designs(
   p0,
@@ -16,52 +16,33 @@ twostage_find_feasible_designs(
 )
 }
 \arguments{
-\item{p0}{Numeric in (0, 1). Null response rate.}
+\item{p0, p1}{Null and alternative response rates in \verb{(0, 1)}, \code{p0 < p1}.}
 
-\item{p1}{Numeric in (0, 1). Alternative response rate (p1 > p0).}
-
-\item{alpha}{Numeric in (0, 1). Maximum allowable type I error.}
-
-\item{power}{Numeric in (0, 1). Minimum required power.}
+\item{alpha, power}{Maximum type I error and minimum power, in \verb{(0, 1)}.}
 
 \item{n_max}{Integer. Maximum total sample size to consider (default 50).}
 
 \item{n1_min}{Integer. Minimum stage-1 sample size (default 1).}
 
-\item{irrevocable}{Logical. If \code{TRUE}, restrict to designs where \code{e1 >= r},
-guaranteeing that an interim efficacy declaration cannot be overturned at
-the final analysis. Use \code{TRUE} when the interim efficacy stopping rule is
-\strong{non-binding} (the trial may continue to stage 2 even after \code{X1 >= e1}),
-so that the final decision remains coherent with the interim declaration.
-Default \code{FALSE}.}
+\item{irrevocable}{Logical. If \code{TRUE}, restrict to designs with \code{e1 >= r}.}
 
-\item{simon}{Logical. If \code{TRUE}, restrict to Simon two-stage designs,
-i.e. designs with no interim stopping for efficacy (\code{e1 = n1 + 1}).
-Default \code{FALSE}. When \code{simon = TRUE} the \code{irrevocable} argument has no
-effect: because there is no interim efficacy declaration, the
-irrevocability constraint is vacuously satisfied regardless of \code{r}.}
+\item{simon}{Logical. If \code{TRUE}, restrict to Simon designs (\code{e1 = n1 + 1},
+no interim efficacy stop).}
 }
 \value{
 A \code{data.frame} with one row per feasible design and columns
 \code{n}, \code{n1}, \code{n2}, \code{r1}, \code{e1}, \code{r}, \code{alpha_actual}, \code{power_actual},
-\code{en_null}, \code{en_alt}, \code{is_irrevocable}.
-Returns an empty \code{data.frame} (with a message) when no designs are found.
+\code{en_null}, \code{en_alt}, \code{is_irrevocable}. Returns an empty \code{data.frame}
+(with a message) when no designs are found.
 }
 \description{
-Exhaustively searches over all combinations of (n, n1, r, e1, r1) with
-total sample size up to \code{n_max} and returns designs that satisfy the type I
-error and power constraints.
+Exhaustively searches over all combinations of \verb{(n, n1, r, e1, r1)} with
+total sample size up to \code{n_max} and returns designs satisfying
+\code{alpha_actual <= alpha}, \code{power_actual >= power}, \code{r1 < e1}, and (optionally)
+the irrevocability constraint \code{e1 >= r}.
 }
 \details{
-A design is feasible when:
-\itemize{
-\item \code{alpha_actual <= alpha}
-\item \code{power_actual >= power}
-\item \code{r1 < e1} (non-trivial continuation region)
-\item \code{e1 >= r} (irrevocability, enforced only when \code{irrevocable = TRUE})
+Used internally by \code{\link[=twostage_admissible_designs]{twostage_admissible_designs()}}. Not exported; users
+should call \code{\link[=twostage_admissible_designs]{twostage_admissible_designs()}} instead.
 }
-}
-\examples{
-twostage_find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05,
-                               power = 0.80, n_max = 40L)
-}
+\keyword{internal}

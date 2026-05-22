@@ -40,7 +40,6 @@
 #'   }
 #'   Returns an empty `data.frame` when no feasible designs are found.
 #'
-#' @seealso [twostage_find_feasible_designs()]
 #' @examples
 #' twostage_admissible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
 #'                             n_max = 40L)

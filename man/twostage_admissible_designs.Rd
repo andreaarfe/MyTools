@@ -69,6 +69,3 @@ and expected sample size under the alternative (\code{en_alt}) — and labels th
 twostage_admissible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
                             n_max = 40L)
 }
-\seealso{
-\code{\link[=twostage_find_feasible_designs]{twostage_find_feasible_designs()}}
-}
