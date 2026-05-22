@@ -53,6 +53,34 @@ static inline void oc_single(int n1, int n2, int r1, int e1, int r,
   out_en = n1 * p_stop + (n1 + n2) * (1.0 - p_stop);
 }
 
+// Like oc_single but also returns p_futility and p_efficacy1.
+static inline void oc_full(int n1, int n2, int r1, int e1, int r,
+                            const std::vector<double>& pmf_x1,
+                            const std::vector<double>& surv_x2,
+                            double& out_p_success, double& out_p_futility,
+                            double& out_p_efficacy1, double& out_en) {
+  double p_eff1 = 0.0, p_fut1 = 0.0, p_success_2 = 0.0;
+  if (e1 <= n1) {
+    for (int k = e1; k <= n1; ++k) p_eff1 += pmf_x1[k];
+  }
+  if (r1 >= 0) {
+    for (int k = 0; k <= r1; ++k) p_fut1 += pmf_x1[k];
+  }
+  if (r1 + 1 <= e1 - 1) {
+    const int hi = n2 + 1;
+    for (int x1 = r1 + 1; x1 <= e1 - 1; ++x1) {
+      int need = r - x1;
+      int idx  = need < 0 ? 0 : (need > hi ? hi : need);
+      p_success_2 += pmf_x1[x1] * surv_x2[idx];
+    }
+  }
+  out_p_success   = p_eff1 + p_success_2;
+  out_p_futility  = p_fut1;
+  out_p_efficacy1 = p_eff1;
+  double p_cont   = 1.0 - p_eff1 - p_fut1;
+  out_en          = static_cast<double>(n1) + static_cast<double>(n2) * p_cont;
+}
+
 // [[Rcpp::export]]
 List evaluate_design_cpp(int n1, int n, int r1, int e1, int r,
                          double p0, double p1) {
@@ -247,4 +275,32 @@ LogicalVector find_admissible_designs_cpp(IntegerVector n,
     i = j;
   }
   return keep;
+}
+
+// [[Rcpp::export]]
+DataFrame evaluate_design_curve_cpp(int n1, int n, int r1, int e1, int r,
+                                    NumericVector p_vec) {
+  int m  = p_vec.size();
+  int n2 = n - n1;
+
+  NumericVector out_p_success(m), out_p_futility(m),
+                out_p_efficacy1(m), out_en(m);
+
+  std::vector<double> pmf(n1 + 1), surv(n2 + 2);
+
+  for (int i = 0; i < m; ++i) {
+    double p = p_vec[i];
+    for (int x = 0; x <= n1; ++x)
+      pmf[x] = R::dbinom(x, n1, p, 0);
+    build_surv(n2, p, surv);
+    oc_full(n1, n2, r1, e1, r, pmf, surv,
+            out_p_success[i], out_p_futility[i],
+            out_p_efficacy1[i], out_en[i]);
+  }
+
+  return DataFrame::create(Named("p")           = p_vec,
+                           Named("p_success")   = out_p_success,
+                           Named("p_futility")  = out_p_futility,
+                           Named("p_efficacy1") = out_p_efficacy1,
+                           Named("en")          = out_en);
 }

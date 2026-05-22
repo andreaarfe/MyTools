@@ -165,3 +165,34 @@ d <- evaluate_design(n1 = 15L, n = 25L, r1 = 0L, e1 = 9L, r = 5L,
                      p0 = p0, p1 = p1)
 str(d)
 ```
+
+## Operating characteristic curves
+
+`evaluate_design_curve()` evaluates a design at an arbitrary vector of
+response probabilities, returning a `data.frame` with one row per `p`. This
+makes it easy to plot OC curves showing how each operating characteristic
+varies across the plausible range of `p`.
+
+```{r oc-curve-data}
+mm <- result[grepl("minimax", result$design_type), ]
+p_grid <- seq(0.01, 0.99, by = 0.01)
+oc <- evaluate_design_curve(mm$n1, mm$n, mm$r1, mm$e1, mm$r, p = p_grid)
+head(oc)
+```
+
+```{r oc-curve-plot, fig.width = 5.5, fig.height = 4, fig.alt = "OC curve: probability of trial success vs response probability for the minimax design"}
+plot(oc$p, oc$p_success,
+     type = "l", lwd = 2, col = "firebrick",
+     xlab = "Response probability p",
+     ylab = "Probability",
+     main = "Operating characteristic curve (minimax design)",
+     ylim = c(0, 1))
+lines(oc$p, oc$p_futility,  lty = 2, lwd = 1.5, col = "steelblue")
+lines(oc$p, oc$p_efficacy1, lty = 3, lwd = 1.5, col = "darkgreen")
+abline(v = c(p0, p1), col = "grey60", lty = 2)
+legend("topleft",
+       legend = c("P(success)", "P(futility stop)", "P(interim efficacy)"),
+       lty    = c(1, 2, 3), lwd = c(2, 1.5, 1.5),
+       col    = c("firebrick", "steelblue", "darkgreen"),
+       bty    = "n")
+```

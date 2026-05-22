@@ -2,6 +2,7 @@
 
 export(admissible_designs)
 export(evaluate_design)
+export(evaluate_design_curve)
 export(find_admissible_designs)
 export(find_feasible_designs)
 importFrom(Rcpp,sourceCpp)
