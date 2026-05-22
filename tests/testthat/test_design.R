@@ -1,7 +1,7 @@
 library(testthat)
 
 # ---------------------------------------------------------------------------
-# design.R — evaluate_design
+# twostage-design.R — twostage_evaluate_design
 # ---------------------------------------------------------------------------
 
 # With r1 = -1 (no futility) and e1 = n1+1 (no interim efficacy), the design
@@ -9,7 +9,7 @@ library(testthat)
 # P(success) = P(Binom(n, p) >= r).
 test_that("one-stage equivalence when interim stops disabled", {
   n1 <- 10L; n <- 20L; r <- 6L
-  d  <- evaluate_design(n1, n, r1 = -1L, e1 = n1 + 1L, r = r, p0 = 0.2, p1 = 0.5)
+  d  <- twostage_evaluate_design(n1, n, r1 = -1L, e1 = n1 + 1L, r = r, p0 = 0.2, p1 = 0.5)
   expect_equal(d$alpha_actual, pbinom(r - 1L, n, 0.2, lower.tail = FALSE),
                tolerance = 1e-10)
   expect_equal(d$power_actual, pbinom(r - 1L, n, 0.5, lower.tail = FALSE),
@@ -22,7 +22,7 @@ test_that("one-stage equivalence when interim stops disabled", {
 test_that("is_irrevocable is TRUE iff e1 >= r", {
   for (r in 3:7) {
     for (e1 in 1:8) {
-      d <- evaluate_design(n1 = 8L, n = 15L, r1 = -1L, e1 = e1, r = r,
+      d <- twostage_evaluate_design(n1 = 8L, n = 15L, r1 = -1L, e1 = e1, r = r,
                            p0 = 0.2, p1 = 0.5)
       expect_equal(d$is_irrevocable, e1 >= r,
                    label = sprintf("e1=%d, r=%d", e1, r))
@@ -31,14 +31,14 @@ test_that("is_irrevocable is TRUE iff e1 >= r", {
 })
 
 test_that("EN is bounded above by n", {
-  d <- evaluate_design(n1 = 10L, n = 20L, r1 = 5L, e1 = 8L, r = 8L,
+  d <- twostage_evaluate_design(n1 = 10L, n = 20L, r1 = 5L, e1 = 8L, r = 8L,
                        p0 = 0.2, p1 = 0.5)
   expect_lte(d$en_null, 20)
   expect_lte(d$en_alt,  20)
 })
 
 test_that("success probability is 0 when r exceeds total sample size", {
-  d <- evaluate_design(n1 = 5L, n = 10L, r1 = -1L, e1 = 6L, r = 11L,
+  d <- twostage_evaluate_design(n1 = 5L, n = 10L, r1 = -1L, e1 = 6L, r = 11L,
                        p0 = 0.2, p1 = 0.5)
   expect_equal(d$alpha_actual, 0, tolerance = 1e-15)
   expect_equal(d$power_actual, 0, tolerance = 1e-15)
@@ -50,7 +50,7 @@ test_that("empty continuation region (r1 = e1 - 1) gives no stage-2 contribution
   # and EN = n1.
   n1 <- 10L; n <- 20L; e1 <- 6L; r1 <- e1 - 1L; r <- 6L
   for (p in c(0.1, 0.3, 0.5, 0.8)) {
-    d <- evaluate_design(n1, n, r1, e1, r, p0 = p, p1 = p)
+    d <- twostage_evaluate_design(n1, n, r1, e1, r, p0 = p, p1 = p)
     p_eff <- pbinom(e1 - 1L, n1, p, lower.tail = FALSE)
     expect_equal(d$alpha_actual, p_eff, tolerance = 1e-10,
                  label = sprintf("p=%.2f, alpha", p))
@@ -64,7 +64,7 @@ test_that("empty continuation region (r1 = e1 - 1) gives no stage-2 contribution
 test_that("success probability matches manual computation in continuation region", {
   # Hand-checked example.
   n1 <- 5L; n <- 10L; r1 <- 1L; e1 <- 4L; r <- 5L; p <- 0.3
-  d <- evaluate_design(n1, n, r1, e1, r, p0 = p, p1 = p)
+  d <- twostage_evaluate_design(n1, n, r1, e1, r, p0 = p, p1 = p)
 
   # P(efficacy at stage 1) = P(X1 >= 4)
   p_eff1 <- pbinom(3L, n1, p, lower.tail = FALSE)
@@ -76,12 +76,12 @@ test_that("success probability matches manual computation in continuation region
 })
 
 # ---------------------------------------------------------------------------
-# search.R — find_feasible_designs
+# twostage-search.R — twostage_find_feasible_designs
 # ---------------------------------------------------------------------------
 
 test_that("all returned designs satisfy constraints (irrevocable = TRUE)", {
   alpha <- 0.05; pw <- 0.80
-  feasible <- find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = alpha,
+  feasible <- twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = alpha,
                                     power = pw, n_max = 25L,
                                     irrevocable = TRUE)
   expect_gt(nrow(feasible), 0)
@@ -92,7 +92,7 @@ test_that("all returned designs satisfy constraints (irrevocable = TRUE)", {
 })
 
 test_that("irrevocable=FALSE returns designs with e1 < r", {
-  feasible <- find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  feasible <- twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                     power = 0.80, n_max = 25L,
                                     irrevocable = FALSE)
   expect_gt(nrow(feasible), 0)
@@ -105,21 +105,21 @@ test_that("irrevocable=FALSE returns designs with e1 < r", {
 
 test_that("irrevocable=TRUE is a subset of irrevocable=FALSE", {
   args <- list(p0 = 0.1, p1 = 0.3, alpha = 0.05, power = 0.80, n_max = 20L)
-  f_irrev  <- do.call(find_feasible_designs, c(args, irrevocable = TRUE))
-  f_all    <- do.call(find_feasible_designs, c(args, irrevocable = FALSE))
+  f_irrev  <- do.call(twostage_find_feasible_designs, c(args, irrevocable = TRUE))
+  f_all    <- do.call(twostage_find_feasible_designs, c(args, irrevocable = FALSE))
   keys <- function(d) paste(d$n1, d$n, d$r1, d$e1, d$r)
   expect_true(all(keys(f_irrev) %in% keys(f_all)))
   expect_lte(nrow(f_irrev), nrow(f_all))
 })
 
 # ---------------------------------------------------------------------------
-# admissibility.R — find_admissible_designs
+# twostage-admissibility.R — twostage_find_admissible_designs
 # ---------------------------------------------------------------------------
 
 test_that("admissible set is a subset of feasible designs", {
-  feasible   <- find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  feasible   <- twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                       power = 0.80, n_max = 25L)
-  admissible <- find_admissible_designs(feasible)
+  admissible <- twostage_find_admissible_designs(feasible)
   expect_lte(nrow(admissible), nrow(feasible))
   keys_adm <- paste(admissible$n1, admissible$n, admissible$r1,
                     admissible$e1, admissible$r)
@@ -129,9 +129,9 @@ test_that("admissible set is a subset of feasible designs", {
 })
 
 test_that("no admissible design is dominated by another admissible design", {
-  feasible   <- find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  feasible   <- twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                       power = 0.80, n_max = 25L)
-  admissible <- find_admissible_designs(feasible)
+  admissible <- twostage_find_admissible_designs(feasible)
   m   <- nrow(admissible)
   nm  <- admissible$n
   en0 <- admissible$en_null
@@ -158,7 +158,7 @@ test_that("admissible set from synthetic designs has correct Pareto frontier", {
   designs <- rbind(make_row(15, 12),   # D1 — dominated by D2
                    make_row(14, 11),   # D2 — dominates D1
                    make_row(13, 13))   # D3 — on frontier
-  adm <- find_admissible_designs(designs)
+  adm <- twostage_find_admissible_designs(designs)
   expect_equal(nrow(adm), 2L)
   expect_true(all(adm$en_null %in% c(14, 13)))
 })
@@ -173,7 +173,7 @@ test_that("identical (n, en_null, en_alt) triples are all retained", {
                en_null=14, en_alt=12, is_irrevocable=TRUE)
   }
   designs <- rbind(make_row(), make_row())
-  adm <- find_admissible_designs(designs)
+  adm <- twostage_find_admissible_designs(designs)
   expect_equal(nrow(adm), 2L)
 })
 
@@ -187,7 +187,7 @@ test_that("identical triples kept; a dominator eliminates all copies", {
   designs <- rbind(make_row(15, 12),  # dominated, copy 1
                    make_row(15, 12),  # dominated, copy 2
                    make_row(13, 11))  # dominator
-  adm <- find_admissible_designs(designs)
+  adm <- twostage_find_admissible_designs(designs)
   expect_equal(nrow(adm), 1L)
   expect_equal(adm$en_null, 13)
   expect_equal(adm$en_alt,  11)
@@ -204,16 +204,16 @@ test_that("3D admissible set retains designs with small n even if worse on EN ax
   }
   designs <- rbind(make_row(18, 15, 14),  # D1 — small n, worse EN axes
                    make_row(25, 13, 12))  # D2 — large n, better EN axes
-  adm <- find_admissible_designs(designs)
+  adm <- twostage_find_admissible_designs(designs)
   expect_equal(nrow(adm), 2L)  # both survive 3D Pareto
 })
 
 # ---------------------------------------------------------------------------
-# admissible_designs.R — admissible_designs
+# twostage-admissible_designs.R — twostage_admissible_designs
 # ---------------------------------------------------------------------------
 
 test_that("admissible_designs returns a data.frame with design_type column", {
-  result <- admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  result <- twostage_admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                power = 0.80, n_max = 25L)
   expect_s3_class(result, "data.frame")
   expect_gt(nrow(result), 0)
@@ -223,7 +223,7 @@ test_that("admissible_designs returns a data.frame with design_type column", {
 })
 
 test_that("exactly one minimax and one optimal label in admissible_designs output", {
-  result <- admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  result <- twostage_admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                power = 0.80, n_max = 25L)
   mm_rows  <- grepl("minimax", result$design_type)
   opt_rows <- grepl("optimal", result$design_type)
@@ -232,21 +232,21 @@ test_that("exactly one minimax and one optimal label in admissible_designs outpu
 })
 
 test_that("minimax design has the smallest n in the admissible set", {
-  result <- admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  result <- twostage_admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                power = 0.80, n_max = 25L)
   mm_n <- result$n[grepl("minimax", result$design_type)]
   expect_true(all(mm_n <= result$n))
 })
 
 test_that("optimal design has the smallest en_null in the admissible set", {
-  result <- admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  result <- twostage_admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                power = 0.80, n_max = 25L)
   opt_en <- result$en_null[grepl("optimal", result$design_type)]
   expect_true(all(opt_en <= result$en_null))
 })
 
 test_that("admissible_designs with irrevocable=FALSE includes non-irrevocable designs", {
-  result <- admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  result <- twostage_admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                power = 0.80, n_max = 25L,
                                irrevocable = FALSE)
   expect_gt(nrow(result), 0)
@@ -258,7 +258,7 @@ test_that("admissible_designs with irrevocable=FALSE includes non-irrevocable de
 # ---------------------------------------------------------------------------
 
 test_that("simon=TRUE returns only designs with e1 = n1 + 1", {
-  feasible <- find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  feasible <- twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                     power = 0.80, n_max = 25L, simon = TRUE)
   expect_gt(nrow(feasible), 0)
   expect_true(all(feasible$e1 == feasible$n1 + 1L))
@@ -266,16 +266,16 @@ test_that("simon=TRUE returns only designs with e1 = n1 + 1", {
 
 test_that("simon=TRUE designs are a subset of all feasible designs", {
   args <- list(p0 = 0.1, p1 = 0.3, alpha = 0.05, power = 0.80, n_max = 20L)
-  f_simon <- do.call(find_feasible_designs, c(args, simon = TRUE,
+  f_simon <- do.call(twostage_find_feasible_designs, c(args, simon = TRUE,
                                               irrevocable = FALSE))
-  f_all   <- do.call(find_feasible_designs, c(args, irrevocable = FALSE))
+  f_all   <- do.call(twostage_find_feasible_designs, c(args, irrevocable = FALSE))
   keys <- function(d) paste(d$n1, d$n, d$r1, d$e1, d$r)
   expect_true(all(keys(f_simon) %in% keys(f_all)))
   expect_lte(nrow(f_simon), nrow(f_all))
 })
 
 test_that("admissible_designs with simon=TRUE returns valid output with design_type", {
-  result <- admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+  result <- twostage_admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                power = 0.80, n_max = 25L, simon = TRUE)
   expect_s3_class(result, "data.frame")
   expect_gt(nrow(result), 0)
@@ -284,14 +284,14 @@ test_that("admissible_designs with simon=TRUE returns valid output with design_t
 })
 
 # ---------------------------------------------------------------------------
-# curve.R — evaluate_design_curve
+# twostage-curve.R — twostage_evaluate_design_curve
 # ---------------------------------------------------------------------------
 
 test_that("evaluate_design_curve is consistent with evaluate_design at p0 and p1", {
   n1 <- 10L; n <- 20L; r1 <- 2L; e1 <- 7L; r <- 6L
   p0 <- 0.1; p1 <- 0.3
-  d   <- evaluate_design(n1, n, r1, e1, r, p0 = p0, p1 = p1)
-  crv <- evaluate_design_curve(n1, n, r1, e1, r, p = c(p0, p1))
+  d   <- twostage_evaluate_design(n1, n, r1, e1, r, p0 = p0, p1 = p1)
+  crv <- twostage_evaluate_design_curve(n1, n, r1, e1, r, p = c(p0, p1))
   expect_equal(crv$p_success[1], d$alpha_actual, tolerance = 1e-12)
   expect_equal(crv$en[1],        d$en_null,      tolerance = 1e-12)
   expect_equal(crv$p_success[2], d$power_actual, tolerance = 1e-12)
@@ -300,20 +300,20 @@ test_that("evaluate_design_curve is consistent with evaluate_design at p0 and p1
 
 test_that("p_efficacy1 is 0 when e1 = n1 + 1 (no interim efficacy stop)", {
   n1 <- 10L; n <- 20L; r1 <- 2L; r <- 6L
-  crv <- evaluate_design_curve(n1, n, r1, e1 = n1 + 1L, r, p = seq(0.1, 0.9, by = 0.1))
+  crv <- twostage_evaluate_design_curve(n1, n, r1, e1 = n1 + 1L, r, p = seq(0.1, 0.9, by = 0.1))
   expect_equal(crv$p_efficacy1, rep(0, nrow(crv)), tolerance = 1e-15)
 })
 
 test_that("p_futility is 0 when r1 = -1 (no futility stop)", {
   n1 <- 10L; n <- 20L; e1 <- 7L; r <- 6L
-  crv <- evaluate_design_curve(n1, n, r1 = -1L, e1, r, p = seq(0.1, 0.9, by = 0.1))
+  crv <- twostage_evaluate_design_curve(n1, n, r1 = -1L, e1, r, p = seq(0.1, 0.9, by = 0.1))
   expect_equal(crv$p_futility, rep(0, nrow(crv)), tolerance = 1e-15)
 })
 
 test_that("en equals n1 + n2 * P(continue to stage 2)", {
   n1 <- 10L; n <- 20L; r1 <- 2L; e1 <- 7L; r <- 6L
   p  <- seq(0.05, 0.95, by = 0.05)
-  crv <- evaluate_design_curve(n1, n, r1, e1, r, p)
+  crv <- twostage_evaluate_design_curve(n1, n, r1, e1, r, p)
   n2  <- n - n1
   p_cont <- 1 - crv$p_futility - crv$p_efficacy1
   expected_en <- n1 + n2 * p_cont
@@ -322,14 +322,14 @@ test_that("en equals n1 + n2 * P(continue to stage 2)", {
 
 test_that("evaluate_design_curve output has correct dimensions and column names", {
   p   <- seq(0.1, 0.5, by = 0.1)
-  crv <- evaluate_design_curve(10L, 20L, 2L, 7L, 6L, p)
+  crv <- twostage_evaluate_design_curve(10L, 20L, 2L, 7L, 6L, p)
   expect_s3_class(crv, "data.frame")
   expect_equal(nrow(crv), length(p))
   expect_equal(names(crv), c("p", "p_success", "p_futility", "p_efficacy1", "en"))
 })
 
 test_that("evaluate_design_curve with empty p vector returns zero-row data.frame", {
-  crv <- evaluate_design_curve(10L, 20L, 2L, 7L, 6L, p = numeric(0))
+  crv <- twostage_evaluate_design_curve(10L, 20L, 2L, 7L, 6L, p = numeric(0))
   expect_s3_class(crv, "data.frame")
   expect_equal(nrow(crv), 0L)
   expect_equal(names(crv), c("p", "p_success", "p_futility", "p_efficacy1", "en"))

@@ -9,18 +9,19 @@ vignette: >
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-library(twostage)
+library(MyTools)
 ```
 
 ## Overview
 
-The **twostage** package enumerates admissible two-stage single-arm trial
-designs for a binary endpoint. It is aimed at early-phase oncology studies
-where a Simon-like design is needed but the full Pareto frontier — not just
-the minimax or optimal design — is of interest.
+The **twostage** module of **MyTools** enumerates admissible two-stage
+single-arm trial designs for a binary endpoint. It is aimed at early-phase
+oncology studies where a Simon-like design is needed but the full Pareto
+frontier — not just the minimax or optimal design — is of interest.
 
-The main entry point is `admissible_designs()`, which takes the four clinical
-constraints and returns all Pareto-optimal designs in a single call.
+The main entry point is `twostage_admissible_designs()`, which takes the
+four clinical constraints and returns all Pareto-optimal designs in a
+single call.
 
 ## Design parameters
 
@@ -55,14 +56,15 @@ power <- 0.80
 n_max <- 40L
 ```
 
-`admissible_designs()` performs an exhaustive search and returns the
-Pareto-optimal designs on three criteria simultaneously: maximum sample size
-($n$), expected sample size under the null ($EN_0$), and expected sample size
-under the alternative ($EN_1$). The **minimax** (minimum $n$) and **optimal**
-(minimum $EN_0$) designs are flagged in the `design_type` column.
+`twostage_admissible_designs()` performs an exhaustive search and returns
+the Pareto-optimal designs on three criteria simultaneously: maximum sample
+size ($n$), expected sample size under the null ($EN_0$), and expected
+sample size under the alternative ($EN_1$). The **minimax** (minimum $n$)
+and **optimal** (minimum $EN_0$) designs are flagged in the `design_type`
+column.
 
 ```{r admissible}
-result <- admissible_designs(p0, p1, alpha, power, n_max)
+result <- twostage_admissible_designs(p0, p1, alpha, power, n_max)
 nrow(result)
 ```
 
@@ -114,8 +116,8 @@ declaration cannot be overturned at the final analysis ($e_1 \ge r$). The
 `is_irrevocable` column indicates which designs satisfy this constraint.
 
 ```{r irrev-true}
-result_irrev <- admissible_designs(p0, p1, alpha, power, n_max,
-                                   irrevocable = TRUE)
+result_irrev <- twostage_admissible_designs(p0, p1, alpha, power, n_max,
+                                            irrevocable = TRUE)
 cat(sprintf("%d admissible designs total, %d irrevocable\n",
             nrow(result), sum(result$is_irrevocable)))
 cat(sprintf("%d admissible irrevocable designs\n", nrow(result_irrev)))
@@ -133,7 +135,8 @@ irrevocability constraint ($e_1 \ge r$) is vacuously satisfied for any $r$,
 so the `irrevocable` argument has no effect when `simon = TRUE`.
 
 ```{r simon}
-simon_result <- admissible_designs(p0, p1, alpha, power, n_max, simon = TRUE)
+simon_result <- twostage_admissible_designs(p0, p1, alpha, power, n_max,
+                                            simon = TRUE)
 nrow(simon_result)
 ```
 
@@ -156,27 +159,28 @@ print(simon_out, row.names = FALSE)
 
 ## Evaluating a single design
 
-`evaluate_design()` computes the operating characteristics for one design
-without running the full search. This is useful for checking a design
+`twostage_evaluate_design()` computes the operating characteristics for one
+design without running the full search. This is useful for checking a design
 proposed on external grounds (e.g. a published Simon design).
 
 ```{r evaluate}
-d <- evaluate_design(n1 = 15L, n = 25L, r1 = 0L, e1 = 9L, r = 5L,
-                     p0 = p0, p1 = p1)
+d <- twostage_evaluate_design(n1 = 15L, n = 25L, r1 = 0L, e1 = 9L, r = 5L,
+                              p0 = p0, p1 = p1)
 str(d)
 ```
 
 ## Operating characteristic curves
 
-`evaluate_design_curve()` evaluates a design at an arbitrary vector of
-response probabilities, returning a `data.frame` with one row per `p`. This
-makes it easy to plot OC curves showing how each operating characteristic
-varies across the plausible range of `p`.
+`twostage_evaluate_design_curve()` evaluates a design at an arbitrary vector
+of response probabilities, returning a `data.frame` with one row per `p`.
+This makes it easy to plot OC curves showing how each operating
+characteristic varies across the plausible range of `p`.
 
 ```{r oc-curve-data}
 mm <- result[grepl("minimax", result$design_type), ]
 p_grid <- seq(0.01, 0.99, by = 0.01)
-oc <- evaluate_design_curve(mm$n1, mm$n, mm$r1, mm$e1, mm$r, p = p_grid)
+oc <- twostage_evaluate_design_curve(mm$n1, mm$n, mm$r1, mm$e1, mm$r,
+                                     p = p_grid)
 head(oc)
 ```
 

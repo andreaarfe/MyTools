@@ -1,7 +1,8 @@
 #' Find all admissible two-stage designs
 #'
-#' Combines [find_feasible_designs()] and [find_admissible_designs()] into a
-#' single call. Returns the Pareto-optimal designs on three criteria —
+#' Combines [twostage_find_feasible_designs()] and
+#' [twostage_find_admissible_designs()] into a single call. Returns the
+#' Pareto-optimal designs on three criteria —
 #' maximum sample size (`n`), expected sample size under the null (`en_null`),
 #' and expected sample size under the alternative (`en_alt`) — and labels the
 #' **minimax** (minimum `n`) and **optimal** (minimum `en_null`) designs.
@@ -39,20 +40,20 @@
 #'   }
 #'   Returns an empty `data.frame` when no feasible designs are found.
 #'
-#' @seealso [find_feasible_designs()], [find_admissible_designs()]
+#' @seealso [twostage_find_feasible_designs()], [twostage_find_admissible_designs()]
 #' @examples
-#' admissible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
-#'                    n_max = 40L)
+#' twostage_admissible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
+#'                             n_max = 40L)
 #' @export
-admissible_designs <- function(p0, p1, alpha, power,
-                               n_max = 50L, n1_min = 1L,
-                               irrevocable = FALSE,
-                               simon = FALSE) {
-  feasible  <- find_feasible_designs(p0, p1, alpha, power,
-                                     n_max, n1_min, irrevocable, simon)
+twostage_admissible_designs <- function(p0, p1, alpha, power,
+                                        n_max = 50L, n1_min = 1L,
+                                        irrevocable = FALSE,
+                                        simon = FALSE) {
+  feasible  <- twostage_find_feasible_designs(p0, p1, alpha, power,
+                                              n_max, n1_min, irrevocable, simon)
   if (nrow(feasible) == 0L) return(feasible)
 
-  admissible <- find_admissible_designs(feasible)
+  admissible <- twostage_find_admissible_designs(feasible)
   if (nrow(admissible) == 0L) return(admissible)
 
   # Minimax: smallest n, tie-break by en_null

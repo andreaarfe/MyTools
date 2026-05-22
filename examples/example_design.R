@@ -3,10 +3,10 @@
 #
 # Run after installing the package:  Rscript examples/example_design.R
 
-library(twostage)
+library(MyTools)
 
 cat("Searching for admissible designs...\n")
-result <- admissible_designs(
+result <- twostage_admissible_designs(
   p0    = 0.10,
   p1    = 0.30,
   alpha = 0.05,
@@ -31,7 +31,7 @@ cat(sprintf("Optimal design: EN_null = %.2f\n",
             result$en_null[grepl("optimal", result$design_type)]))
 
 cat("\n--- Simon two-stage designs (no interim efficacy stop) ---\n")
-simon_result <- admissible_designs(
+simon_result <- twostage_admissible_designs(
   p0    = 0.10,
   p1    = 0.30,
   alpha = 0.05,

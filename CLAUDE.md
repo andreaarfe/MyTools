@@ -48,7 +48,11 @@ Rscript -e 'Rcpp::compileAttributes()'
 
 ## Architecture
 
-The package enumerates all admissible two-stage single-arm clinical trial designs for a binary endpoint. The pipeline is: **search → filter → Pareto-optimise**.
+`MyTools` is a collection of statistical and clinical-trial utilities, organised as a set of named modules. Each module is identified by a function-name prefix (e.g. `twostage_*`) and a set of files prefixed by the same name in `R/`, `man/`, and the vignettes index. Future modules will follow the same pattern; shared C++ utilities will be extracted into their own source files when a second module needs them.
+
+### Module: twostage
+
+The `twostage` module enumerates all admissible two-stage single-arm clinical trial designs for a binary endpoint. The pipeline is: **search → filter → Pareto-optimise**.
 
 ### Core design parameters
 
@@ -64,33 +68,16 @@ Each design is defined by `(n1, n, r1, e1, r)`:
 
 ### User-facing documentation
 
-`vignettes/twostage.Rmd` is the primary worked-example guide. It covers: finding admissible designs, interpreting the Pareto frontier, restricting to irrevocable designs (`irrevocable = TRUE`), restricting to Simon two-stage designs (`simon = TRUE`), and evaluating a single design with `evaluate_design()`.
+`vignettes/twostage.Rmd` is the primary worked-example guide for the `twostage` module. It covers: finding admissible designs, interpreting the Pareto frontier, restricting to irrevocable designs (`irrevocable = TRUE`), restricting to Simon two-stage designs (`simon = TRUE`), evaluating a single design with `twostage_evaluate_design()`, and plotting OC curves with `twostage_evaluate_design_curve()`.
 
 ### Module responsibilities
 
-- **`R/design.R`** — thin R wrapper around `evaluate_design_cpp`. Computes `alpha_actual`, `power_actual`, `en_null`, `en_alt`, `is_irrevocable` for a single design. No input validation (caller's responsibility).
-- **`R/search.R`** — thin R wrapper around `find_feasible_designs_cpp`. Validates inputs, delegates the five nested loops to C++, emits a message when no designs are found. Returns a `data.frame` with `n` first, `p0`/`p1` dropped, and row names reset. Key options: `irrevocable` (enforce `e1 ≥ r`), `simon` (fix `e1 = n1+1`, no interim efficacy stop).
-- **`R/admissibility.R`** — thin R wrapper around `find_admissible_designs_cpp`. Returns the 3D Pareto frontier on `(n, en_null, en_alt)`: a design survives if no other design is weakly better on all three axes with at least one strict improvement. Sorting (by `n` descending) and row-name reset done in R.
-- **`R/admissible_designs.R`** — top-level convenience function. Calls `find_feasible_designs` then `find_admissible_designs`, and labels the minimax design (min `n`, tie-break min `en_null`) and optimal design (min `en_null`, tie-break min `n`) via a `design_type` column. Accepts `irrevocable` and `simon` and passes them through.
-- **`src/twostage.cpp`** — C++ implementations (`evaluate_design_cpp`, `find_feasible_designs_cpp`, `find_admissible_designs_cpp`). Hot loops live here; binomial PMF cached per `n1`, and survival function `P(X2 ≥ k)` cached per `(n, n1)` to hoist `R::pbinom` out of the innermost loop. `find_admissible_designs_cpp` uses a sort-then-sweep O(m log m) Pareto filter with a 2D staircase rather than the naïve O(m²) double scan.
-
-## Planned work
-
-### Refactor: generalise package scope
-
-Refactor the R package from a two-stage design tool into a general-purpose collection of statistical/clinical-trial utilities. The two-stage design code becomes one module within a broader toolbox; new tools will be added over time. Consider renaming the package and restructuring namespacing accordingly.
-
-### Next feature: OC curves
-
-Add a function to evaluate the operating characteristics of a two-stage design at an arbitrary response probability `p` (not just the design's `p0`/`p1`). This enables operating-characteristic curves across a range of `p` values.
-
-**Outputs of interest:**
-- Probability of promotion (final success: `X1 + X2 ≥ r`, or early efficacy: `X1 ≥ e1`)
-- Probability of early stopping for futility (`X1 ≤ r1`)
-- Probability of early stopping for efficacy (`X1 ≥ e1`)
-- Expected final sample size
-
-**Implementation note:** `oc_single()` in `src/twostage.cpp` already computes all four quantities for a given `p` given a precomputed PMF of `X1` and survival table for `X2`. The new R-level function would call `evaluate_design_cpp` (or a thin new C++ helper) in a vectorised loop over a user-supplied vector of `p` values, returning a `data.frame` with one row per `p`. The `build_surv()` helper introduced in the pbinom-caching refactor can be reused directly.
+- **`R/twostage-design.R`** — thin R wrapper around `evaluate_design_cpp` exporting `twostage_evaluate_design()`. Computes `alpha_actual`, `power_actual`, `en_null`, `en_alt`, `is_irrevocable` for a single design. No input validation (caller's responsibility).
+- **`R/twostage-search.R`** — thin R wrapper around `find_feasible_designs_cpp` exporting `twostage_find_feasible_designs()`. Validates inputs, delegates the five nested loops to C++, emits a message when no designs are found. Returns a `data.frame` with `n` first, `p0`/`p1` dropped, and row names reset. Key options: `irrevocable` (enforce `e1 ≥ r`), `simon` (fix `e1 = n1+1`, no interim efficacy stop).
+- **`R/twostage-admissibility.R`** — thin R wrapper around `find_admissible_designs_cpp` exporting `twostage_find_admissible_designs()`. Returns the 3D Pareto frontier on `(n, en_null, en_alt)`: a design survives if no other design is weakly better on all three axes with at least one strict improvement. Sorting (by `n` descending) and row-name reset done in R.
+- **`R/twostage-admissible_designs.R`** — top-level convenience function `twostage_admissible_designs()`. Calls `twostage_find_feasible_designs` then `twostage_find_admissible_designs`, and labels the minimax design (min `n`, tie-break min `en_null`) and optimal design (min `en_null`, tie-break min `n`) via a `design_type` column. Accepts `irrevocable` and `simon` and passes them through.
+- **`R/twostage-curve.R`** — thin R wrapper around `evaluate_design_curve_cpp` exporting `twostage_evaluate_design_curve()`. Evaluates a fixed design across a vector of response probabilities `p`, returning a `data.frame` with `p_success`, `p_futility`, `p_efficacy1`, and `en`.
+- **`src/twostage.cpp`** — C++ implementations (`evaluate_design_cpp`, `find_feasible_designs_cpp`, `find_admissible_designs_cpp`, `evaluate_design_curve_cpp`). Hot loops live here; binomial PMF cached per `n1`, and survival function `P(X2 ≥ k)` cached per `(n, n1)` to hoist `R::pbinom` out of the innermost loop. `find_admissible_designs_cpp` uses a sort-then-sweep O(m log m) Pareto filter with a 2D staircase rather than the naïve O(m²) double scan.
 
 ## CRAN compliance
 

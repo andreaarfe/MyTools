@@ -12,7 +12,7 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 
 // evaluate_design_cpp
 List evaluate_design_cpp(int n1, int n, int r1, int e1, int r, double p0, double p1);
-RcppExport SEXP _twostage_evaluate_design_cpp(SEXP n1SEXP, SEXP nSEXP, SEXP r1SEXP, SEXP e1SEXP, SEXP rSEXP, SEXP p0SEXP, SEXP p1SEXP) {
+RcppExport SEXP _MyTools_evaluate_design_cpp(SEXP n1SEXP, SEXP nSEXP, SEXP r1SEXP, SEXP e1SEXP, SEXP rSEXP, SEXP p0SEXP, SEXP p1SEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -29,7 +29,7 @@ END_RCPP
 }
 // find_feasible_designs_cpp
 DataFrame find_feasible_designs_cpp(double p0, double p1, double alpha, double power, int n_max, int n1_min, bool irrevocable, bool simon);
-RcppExport SEXP _twostage_find_feasible_designs_cpp(SEXP p0SEXP, SEXP p1SEXP, SEXP alphaSEXP, SEXP powerSEXP, SEXP n_maxSEXP, SEXP n1_minSEXP, SEXP irrevocableSEXP, SEXP simonSEXP) {
+RcppExport SEXP _MyTools_find_feasible_designs_cpp(SEXP p0SEXP, SEXP p1SEXP, SEXP alphaSEXP, SEXP powerSEXP, SEXP n_maxSEXP, SEXP n1_minSEXP, SEXP irrevocableSEXP, SEXP simonSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -47,7 +47,7 @@ END_RCPP
 }
 // find_admissible_designs_cpp
 LogicalVector find_admissible_designs_cpp(IntegerVector n, NumericVector en_null, NumericVector en_alt);
-RcppExport SEXP _twostage_find_admissible_designs_cpp(SEXP nSEXP, SEXP en_nullSEXP, SEXP en_altSEXP) {
+RcppExport SEXP _MyTools_find_admissible_designs_cpp(SEXP nSEXP, SEXP en_nullSEXP, SEXP en_altSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -60,7 +60,7 @@ END_RCPP
 }
 // evaluate_design_curve_cpp
 DataFrame evaluate_design_curve_cpp(int n1, int n, int r1, int e1, int r, NumericVector p_vec);
-RcppExport SEXP _twostage_evaluate_design_curve_cpp(SEXP n1SEXP, SEXP nSEXP, SEXP r1SEXP, SEXP e1SEXP, SEXP rSEXP, SEXP p_vecSEXP) {
+RcppExport SEXP _MyTools_evaluate_design_curve_cpp(SEXP n1SEXP, SEXP nSEXP, SEXP r1SEXP, SEXP e1SEXP, SEXP rSEXP, SEXP p_vecSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -76,14 +76,14 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_twostage_evaluate_design_cpp", (DL_FUNC) &_twostage_evaluate_design_cpp, 7},
-    {"_twostage_find_feasible_designs_cpp", (DL_FUNC) &_twostage_find_feasible_designs_cpp, 8},
-    {"_twostage_find_admissible_designs_cpp", (DL_FUNC) &_twostage_find_admissible_designs_cpp, 3},
-    {"_twostage_evaluate_design_curve_cpp", (DL_FUNC) &_twostage_evaluate_design_curve_cpp, 6},
+    {"_MyTools_evaluate_design_cpp", (DL_FUNC) &_MyTools_evaluate_design_cpp, 7},
+    {"_MyTools_find_feasible_designs_cpp", (DL_FUNC) &_MyTools_find_feasible_designs_cpp, 8},
+    {"_MyTools_find_admissible_designs_cpp", (DL_FUNC) &_MyTools_find_admissible_designs_cpp, 3},
+    {"_MyTools_evaluate_design_curve_cpp", (DL_FUNC) &_MyTools_evaluate_design_curve_cpp, 6},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_twostage(DllInfo *dll) {
+RcppExport void R_init_MyTools(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }

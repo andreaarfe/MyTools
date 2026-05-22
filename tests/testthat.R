@@ -1,4 +1,4 @@
 library(testthat)
-library(twostage)
+library(MyTools)
 
-test_check("twostage")
+test_check("MyTools")

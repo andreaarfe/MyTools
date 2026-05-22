@@ -33,13 +33,13 @@
 #'   `en_null`, `en_alt`, `is_irrevocable`.
 #'   Returns an empty `data.frame` (with a message) when no designs are found.
 #' @examples
-#' find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
-#'                       n_max = 40L)
+#' twostage_find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05,
+#'                                power = 0.80, n_max = 40L)
 #' @export
-find_feasible_designs <- function(p0, p1, alpha, power,
-                                  n_max = 50L, n1_min = 1L,
-                                  irrevocable = FALSE,
-                                  simon = FALSE) {
+twostage_find_feasible_designs <- function(p0, p1, alpha, power,
+                                           n_max = 50L, n1_min = 1L,
+                                           irrevocable = FALSE,
+                                           simon = FALSE) {
   stopifnot(0 < p0, p0 < p1, p1 < 1,
             0 < alpha, alpha < 1,
             0 < power, power < 1,

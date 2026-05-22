@@ -6,17 +6,17 @@
 #' A design is admissible if no other design is weakly better on all three
 #' axes with at least one strict improvement.
 #'
-#' @param designs A `data.frame` as returned by [find_feasible_designs()],
+#' @param designs A `data.frame` as returned by [twostage_find_feasible_designs()],
 #'   containing at least columns `n`, `en_null`, and `en_alt`.
 #'
 #' @return A `data.frame` of admissible designs sorted by `n` descending.
 #'   Returns `designs` unchanged (empty) when the input has zero rows.
 #' @examples
-#' feasible <- find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05,
-#'                                   power = 0.80, n_max = 40L)
-#' find_admissible_designs(feasible)
+#' feasible <- twostage_find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05,
+#'                                            power = 0.80, n_max = 40L)
+#' twostage_find_admissible_designs(feasible)
 #' @export
-find_admissible_designs <- function(designs) {
+twostage_find_admissible_designs <- function(designs) {
   if (nrow(designs) == 0L) return(designs)
 
   keep <- find_admissible_designs_cpp(as.integer(designs$n),
