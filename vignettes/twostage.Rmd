@@ -161,7 +161,7 @@ print(simon_out, row.names = FALSE)
 
 `twostage_evaluate_design()` computes the operating characteristics of a
 design at an arbitrary vector of response probabilities `p`, returning a
-`data.frame` with one row per `p` and columns `p_success`, `p_futility`,
+`data.frame` with one row per `p` and columns `p`, `p_success`, `p_futility`,
 `p_efficacy1`, and `en`. This is useful both for spot-checking a design
 proposed on external grounds (e.g. a published Simon design) and for
 plotting OC curves over a grid of `p`.
