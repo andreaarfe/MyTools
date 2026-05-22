@@ -23,6 +23,9 @@
 #'       interim analysis (\eqn{X_1 \ge e_1}).}
 #'     \item{en}{Expected sample size.}
 #'   }
+#' @examples
+#' evaluate_design_curve(n1 = 15L, n = 25L, r1 = 0L, e1 = 9L, r = 5L,
+#'                       p = seq(0.05, 0.50, by = 0.05))
 #' @export
 evaluate_design_curve <- function(n1, n, r1, e1, r, p) {
   evaluate_design_curve_cpp(

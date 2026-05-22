@@ -47,10 +47,6 @@ A \code{data.frame} with one row per feasible design and columns
 \code{en_null}, \code{en_alt}, \code{is_irrevocable}.
 Returns an empty \code{data.frame} (with a message) when no designs are found.
 }
-\examples{
-find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
-                      n_max = 40L)
-}
 \description{
 Exhaustively searches over all combinations of (n, n1, r, e1, r1) with
 total sample size up to \code{n_max} and returns designs that satisfy the type I
@@ -64,4 +60,8 @@ A design is feasible when:
 \item \code{r1 < e1} (non-trivial continuation region)
 \item \code{e1 >= r} (irrevocability, enforced only when \code{irrevocable = TRUE})
 }
+}
+\examples{
+find_feasible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
+                      n_max = 40L)
 }

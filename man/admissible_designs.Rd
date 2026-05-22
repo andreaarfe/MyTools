@@ -58,17 +58,16 @@ optimal.}
 Returns an empty \code{data.frame} when no feasible designs are found.
 }
 \description{
-Combines \code{\link{find_feasible_designs}} and
-\code{\link{find_admissible_designs}} into a single call. Returns the
-Pareto-optimal designs on three criteria — maximum sample size (\code{n}),
-expected sample size under the null (\code{en_null}), and expected sample size
-under the alternative (\code{en_alt}) — and labels the \strong{minimax}
-(minimum \code{n}) and \strong{optimal} (minimum \code{en_null}) designs.
+Combines \code{\link[=find_feasible_designs]{find_feasible_designs()}} and \code{\link[=find_admissible_designs]{find_admissible_designs()}} into a
+single call. Returns the Pareto-optimal designs on three criteria —
+maximum sample size (\code{n}), expected sample size under the null (\code{en_null}),
+and expected sample size under the alternative (\code{en_alt}) — and labels the
+\strong{minimax} (minimum \code{n}) and \strong{optimal} (minimum \code{en_null}) designs.
 }
 \examples{
 admissible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,
                    n_max = 40L)
 }
 \seealso{
-\code{\link{find_feasible_designs}}, \code{\link{find_admissible_designs}}
+\code{\link[=find_feasible_designs]{find_feasible_designs()}}, \code{\link[=find_admissible_designs]{find_admissible_designs()}}
 }

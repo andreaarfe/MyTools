@@ -58,7 +58,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-
 // evaluate_design_curve_cpp
 DataFrame evaluate_design_curve_cpp(int n1, int n, int r1, int e1, int r, NumericVector p_vec);
 RcppExport SEXP _twostage_evaluate_design_curve_cpp(SEXP n1SEXP, SEXP nSEXP, SEXP r1SEXP, SEXP e1SEXP, SEXP rSEXP, SEXP p_vecSEXP) {
