@@ -282,3 +282,55 @@ test_that("admissible_designs with simon=TRUE returns valid output with design_t
   expect_true("design_type" %in% names(result))
   expect_true(all(result$e1 == result$n1 + 1L))
 })
+
+# ---------------------------------------------------------------------------
+# curve.R — evaluate_design_curve
+# ---------------------------------------------------------------------------
+
+test_that("evaluate_design_curve is consistent with evaluate_design at p0 and p1", {
+  n1 <- 10L; n <- 20L; r1 <- 2L; e1 <- 7L; r <- 6L
+  p0 <- 0.1; p1 <- 0.3
+  d   <- evaluate_design(n1, n, r1, e1, r, p0 = p0, p1 = p1)
+  crv <- evaluate_design_curve(n1, n, r1, e1, r, p = c(p0, p1))
+  expect_equal(crv$p_success[1], d$alpha_actual, tolerance = 1e-12)
+  expect_equal(crv$en[1],        d$en_null,      tolerance = 1e-12)
+  expect_equal(crv$p_success[2], d$power_actual, tolerance = 1e-12)
+  expect_equal(crv$en[2],        d$en_alt,       tolerance = 1e-12)
+})
+
+test_that("p_efficacy1 is 0 when e1 = n1 + 1 (no interim efficacy stop)", {
+  n1 <- 10L; n <- 20L; r1 <- 2L; r <- 6L
+  crv <- evaluate_design_curve(n1, n, r1, e1 = n1 + 1L, r, p = seq(0.1, 0.9, by = 0.1))
+  expect_equal(crv$p_efficacy1, rep(0, nrow(crv)), tolerance = 1e-15)
+})
+
+test_that("p_futility is 0 when r1 = -1 (no futility stop)", {
+  n1 <- 10L; n <- 20L; e1 <- 7L; r <- 6L
+  crv <- evaluate_design_curve(n1, n, r1 = -1L, e1, r, p = seq(0.1, 0.9, by = 0.1))
+  expect_equal(crv$p_futility, rep(0, nrow(crv)), tolerance = 1e-15)
+})
+
+test_that("en equals n1 + n2 * P(continue to stage 2)", {
+  n1 <- 10L; n <- 20L; r1 <- 2L; e1 <- 7L; r <- 6L
+  p  <- seq(0.05, 0.95, by = 0.05)
+  crv <- evaluate_design_curve(n1, n, r1, e1, r, p)
+  n2  <- n - n1
+  p_cont <- 1 - crv$p_futility - crv$p_efficacy1
+  expected_en <- n1 + n2 * p_cont
+  expect_equal(crv$en, expected_en, tolerance = 1e-12)
+})
+
+test_that("evaluate_design_curve output has correct dimensions and column names", {
+  p   <- seq(0.1, 0.5, by = 0.1)
+  crv <- evaluate_design_curve(10L, 20L, 2L, 7L, 6L, p)
+  expect_s3_class(crv, "data.frame")
+  expect_equal(nrow(crv), length(p))
+  expect_equal(names(crv), c("p", "p_success", "p_futility", "p_efficacy1", "en"))
+})
+
+test_that("evaluate_design_curve with empty p vector returns zero-row data.frame", {
+  crv <- evaluate_design_curve(10L, 20L, 2L, 7L, 6L, p = numeric(0))
+  expect_s3_class(crv, "data.frame")
+  expect_equal(nrow(crv), 0L)
+  expect_equal(names(crv), c("p", "p_success", "p_futility", "p_efficacy1", "en"))
+})

@@ -74,7 +74,13 @@ Each design is defined by `(n1, n, r1, e1, r)`:
 - **`R/admissible_designs.R`** — top-level convenience function. Calls `find_feasible_designs` then `find_admissible_designs`, and labels the minimax design (min `n`, tie-break min `en_null`) and optimal design (min `en_null`, tie-break min `n`) via a `design_type` column. Accepts `irrevocable` and `simon` and passes them through.
 - **`src/twostage.cpp`** — C++ implementations (`evaluate_design_cpp`, `find_feasible_designs_cpp`, `find_admissible_designs_cpp`). Hot loops live here; binomial PMF cached per `n1`, and survival function `P(X2 ≥ k)` cached per `(n, n1)` to hoist `R::pbinom` out of the innermost loop. `find_admissible_designs_cpp` uses a sort-then-sweep O(m log m) Pareto filter with a 2D staircase rather than the naïve O(m²) double scan.
 
-## Planned next feature
+## Planned work
+
+### Refactor: generalise package scope
+
+Refactor the R package from a two-stage design tool into a general-purpose collection of statistical/clinical-trial utilities. The two-stage design code becomes one module within a broader toolbox; new tools will be added over time. Consider renaming the package and restructuring namespacing accordingly.
+
+### Next feature: OC curves
 
 Add a function to evaluate the operating characteristics of a two-stage design at an arbitrary response probability `p` (not just the design's `p0`/`p1`). This enables operating-characteristic curves across a range of `p` values.
 

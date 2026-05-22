@@ -8,18 +8,18 @@
 \description{
 Enumerates all admissible two-stage single-arm clinical trial designs for a
 binary endpoint. Supports futility and efficacy stopping at an interim
-analysis. The \code{irrevocable = TRUE} option enforces the constraint
-\eqn{e_1 \ge r}, ensuring that an interim efficacy declaration cannot be
-overturned by the final analysis; use it when the interim efficacy stopping
-rule is \strong{non-binding} (the trial may continue to stage 2 even after
-declaring interim success) so that the final decision remains coherent with
-the interim declaration. The default is \code{irrevocable = FALSE}.
+analysis. The \code{irrevocable = TRUE} option enforces the constraint \code{e1 >= r},
+ensuring that an interim efficacy declaration cannot be overturned by the
+final analysis; use it when the interim efficacy stopping rule is
+\strong{non-binding} (the trial may continue to stage 2 even after declaring
+interim success) so that the final decision remains coherent with the interim
+declaration. The default is \code{irrevocable = FALSE}.
+}
+\seealso{
+\code{vignette("twostage", package = "twostage")}
 }
 \author{
 \strong{Maintainer}: Andrea Arfe \email{andrea.arfe@gmail.com}
 
-}
-\seealso{
-\code{vignette("twostage", package = "twostage")}
 }
 \keyword{internal}

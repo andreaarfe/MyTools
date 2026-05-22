@@ -13,3 +13,7 @@ find_admissible_designs_cpp <- function(n, en_null, en_alt) {
     .Call(`_twostage_find_admissible_designs_cpp`, n, en_null, en_alt)
 }
 
+evaluate_design_curve_cpp <- function(n1, n, r1, e1, r, p_vec) {
+    .Call(`_twostage_evaluate_design_curve_cpp`, n1, n, r1, e1, r, p_vec)
+}
+
