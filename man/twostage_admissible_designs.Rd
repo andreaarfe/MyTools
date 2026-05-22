@@ -58,8 +58,9 @@ optimal.}
 Returns an empty \code{data.frame} when no feasible designs are found.
 }
 \description{
-Combines \code{\link[=twostage_find_feasible_designs]{twostage_find_feasible_designs()}} and \code{\link[=twostage_find_admissible_designs]{twostage_find_admissible_designs()}} into a
-single call. Returns the Pareto-optimal designs on three criteria —
+Combines \code{\link[=twostage_find_feasible_designs]{twostage_find_feasible_designs()}} and
+\code{\link[=twostage_find_admissible_designs]{twostage_find_admissible_designs()}} into a single call. Returns the
+Pareto-optimal designs on three criteria —
 maximum sample size (\code{n}), expected sample size under the null (\code{en_null}),
 and expected sample size under the alternative (\code{en_alt}) — and labels the
 \strong{minimax} (minimum \code{n}) and \strong{optimal} (minimum \code{en_null}) designs.
