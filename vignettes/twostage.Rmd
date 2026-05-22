@@ -157,30 +157,24 @@ simon_out$en_alt       <- round(simon_out$en_alt, 2)
 print(simon_out, row.names = FALSE)
 ```
 
-## Evaluating a single design
+## Evaluating a design
 
-`twostage_evaluate_design()` computes the operating characteristics for one
-design without running the full search. This is useful for checking a design
-proposed on external grounds (e.g. a published Simon design).
+`twostage_evaluate_design()` computes the operating characteristics of a
+design at an arbitrary vector of response probabilities `p`, returning a
+`data.frame` with one row per `p` and columns `p_success`, `p_futility`,
+`p_efficacy1`, and `en`. This is useful both for spot-checking a design
+proposed on external grounds (e.g. a published Simon design) and for
+plotting OC curves over a grid of `p`.
 
-```{r evaluate}
-d <- twostage_evaluate_design(n1 = 15L, n = 25L, r1 = 0L, e1 = 9L, r = 5L,
-                              p0 = p0, p1 = p1)
-str(d)
+```{r evaluate-spot}
+twostage_evaluate_design(n1 = 15L, n = 25L, r1 = 0L, e1 = 9L, r = 5L,
+                         p = c(p0, p1))
 ```
-
-## Operating characteristic curves
-
-`twostage_evaluate_design_curve()` evaluates a design at an arbitrary vector
-of response probabilities, returning a `data.frame` with one row per `p`.
-This makes it easy to plot OC curves showing how each operating
-characteristic varies across the plausible range of `p`.
 
 ```{r oc-curve-data}
 mm <- result[grepl("minimax", result$design_type), ]
 p_grid <- seq(0.01, 0.99, by = 0.01)
-oc <- twostage_evaluate_design_curve(mm$n1, mm$n, mm$r1, mm$e1, mm$r,
-                                     p = p_grid)
+oc <- twostage_evaluate_design(mm$n1, mm$n, mm$r1, mm$e1, mm$r, p = p_grid)
 head(oc)
 ```
 

@@ -82,42 +82,6 @@ static inline void oc_full(int n1, int n2, int r1, int e1, int r,
 }
 
 // [[Rcpp::export]]
-List evaluate_design_cpp(int n1, int n, int r1, int e1, int r,
-                         double p0, double p1) {
-  int n2 = n - n1;
-
-  std::vector<double> pmf0(n1 + 1), pmf1(n1 + 1);
-  for (int k = 0; k <= n1; ++k) {
-    pmf0[k] = R::dbinom(k, n1, p0, /*log=*/0);
-    pmf1[k] = R::dbinom(k, n1, p1, /*log=*/0);
-  }
-
-  std::vector<double> surv0, surv1;
-  build_surv(n2, p0, surv0);
-  build_surv(n2, p1, surv1);
-
-  double alpha_actual, en_null, power_actual, en_alt;
-  oc_single(n1, n2, r1, e1, r, pmf0, surv0, alpha_actual, en_null);
-  oc_single(n1, n2, r1, e1, r, pmf1, surv1, power_actual, en_alt);
-
-  return List::create(
-    _["n1"]             = n1,
-    _["n"]              = n,
-    _["n2"]             = n2,
-    _["r1"]             = r1,
-    _["e1"]             = e1,
-    _["r"]              = r,
-    _["p0"]             = p0,
-    _["p1"]             = p1,
-    _["alpha_actual"]   = alpha_actual,
-    _["power_actual"]   = power_actual,
-    _["en_null"]        = en_null,
-    _["en_alt"]         = en_alt,
-    _["is_irrevocable"] = (e1 >= r)
-  );
-}
-
-// [[Rcpp::export]]
 DataFrame find_feasible_designs_cpp(double p0, double p1,
                                     double alpha, double power,
                                     int n_max, int n1_min,
@@ -278,8 +242,8 @@ LogicalVector find_admissible_designs_cpp(IntegerVector n,
 }
 
 // [[Rcpp::export]]
-DataFrame evaluate_design_curve_cpp(int n1, int n, int r1, int e1, int r,
-                                    NumericVector p_vec) {
+DataFrame evaluate_design_cpp(int n1, int n, int r1, int e1, int r,
+                              NumericVector p_vec) {
   int m  = p_vec.size();
   int n2 = n - n1;
 

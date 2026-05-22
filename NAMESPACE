@@ -2,7 +2,6 @@
 
 export(twostage_admissible_designs)
 export(twostage_evaluate_design)
-export(twostage_evaluate_design_curve)
 export(twostage_find_admissible_designs)
 export(twostage_find_feasible_designs)
 importFrom(Rcpp,sourceCpp)

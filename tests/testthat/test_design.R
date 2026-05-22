@@ -9,39 +9,27 @@ library(testthat)
 # P(success) = P(Binom(n, p) >= r).
 test_that("one-stage equivalence when interim stops disabled", {
   n1 <- 10L; n <- 20L; r <- 6L
-  d  <- twostage_evaluate_design(n1, n, r1 = -1L, e1 = n1 + 1L, r = r, p0 = 0.2, p1 = 0.5)
-  expect_equal(d$alpha_actual, pbinom(r - 1L, n, 0.2, lower.tail = FALSE),
+  d  <- twostage_evaluate_design(n1, n, r1 = -1L, e1 = n1 + 1L, r = r,
+                                 p = c(0.2, 0.5))
+  expect_equal(d$p_success[1], pbinom(r - 1L, n, 0.2, lower.tail = FALSE),
                tolerance = 1e-10)
-  expect_equal(d$power_actual, pbinom(r - 1L, n, 0.5, lower.tail = FALSE),
+  expect_equal(d$p_success[2], pbinom(r - 1L, n, 0.5, lower.tail = FALSE),
                tolerance = 1e-10)
   # EN must equal n when trial never stops early
-  expect_equal(d$en_null, n, tolerance = 1e-10)
-  expect_equal(d$en_alt,  n, tolerance = 1e-10)
-})
-
-test_that("is_irrevocable is TRUE iff e1 >= r", {
-  for (r in 3:7) {
-    for (e1 in 1:8) {
-      d <- twostage_evaluate_design(n1 = 8L, n = 15L, r1 = -1L, e1 = e1, r = r,
-                           p0 = 0.2, p1 = 0.5)
-      expect_equal(d$is_irrevocable, e1 >= r,
-                   label = sprintf("e1=%d, r=%d", e1, r))
-    }
-  }
+  expect_equal(d$en[1], n, tolerance = 1e-10)
+  expect_equal(d$en[2], n, tolerance = 1e-10)
 })
 
 test_that("EN is bounded above by n", {
   d <- twostage_evaluate_design(n1 = 10L, n = 20L, r1 = 5L, e1 = 8L, r = 8L,
-                       p0 = 0.2, p1 = 0.5)
-  expect_lte(d$en_null, 20)
-  expect_lte(d$en_alt,  20)
+                                p = c(0.2, 0.5))
+  expect_true(all(d$en <= 20))
 })
 
 test_that("success probability is 0 when r exceeds total sample size", {
   d <- twostage_evaluate_design(n1 = 5L, n = 10L, r1 = -1L, e1 = 6L, r = 11L,
-                       p0 = 0.2, p1 = 0.5)
-  expect_equal(d$alpha_actual, 0, tolerance = 1e-15)
-  expect_equal(d$power_actual, 0, tolerance = 1e-15)
+                                p = c(0.2, 0.5))
+  expect_equal(d$p_success, c(0, 0), tolerance = 1e-15)
 })
 
 test_that("empty continuation region (r1 = e1 - 1) gives no stage-2 contribution", {
@@ -49,22 +37,17 @@ test_that("empty continuation region (r1 = e1 - 1) gives no stage-2 contribution
   # interim, so the trial always stops at stage 1: P(success) = P(X1 >= e1)
   # and EN = n1.
   n1 <- 10L; n <- 20L; e1 <- 6L; r1 <- e1 - 1L; r <- 6L
-  for (p in c(0.1, 0.3, 0.5, 0.8)) {
-    d <- twostage_evaluate_design(n1, n, r1, e1, r, p0 = p, p1 = p)
-    p_eff <- pbinom(e1 - 1L, n1, p, lower.tail = FALSE)
-    expect_equal(d$alpha_actual, p_eff, tolerance = 1e-10,
-                 label = sprintf("p=%.2f, alpha", p))
-    expect_equal(d$power_actual, p_eff, tolerance = 1e-10,
-                 label = sprintf("p=%.2f, power", p))
-    expect_equal(d$en_null, n1, tolerance = 1e-10,
-                 label = sprintf("p=%.2f, EN", p))
-  }
+  p_vec <- c(0.1, 0.3, 0.5, 0.8)
+  d <- twostage_evaluate_design(n1, n, r1, e1, r, p = p_vec)
+  p_eff <- pbinom(e1 - 1L, n1, p_vec, lower.tail = FALSE)
+  expect_equal(d$p_success, p_eff, tolerance = 1e-10)
+  expect_equal(d$en, rep(n1, length(p_vec)), tolerance = 1e-10)
 })
 
 test_that("success probability matches manual computation in continuation region", {
   # Hand-checked example.
   n1 <- 5L; n <- 10L; r1 <- 1L; e1 <- 4L; r <- 5L; p <- 0.3
-  d <- twostage_evaluate_design(n1, n, r1, e1, r, p0 = p, p1 = p)
+  d <- twostage_evaluate_design(n1, n, r1, e1, r, p = p)
 
   # P(efficacy at stage 1) = P(X1 >= 4)
   p_eff1 <- pbinom(3L, n1, p, lower.tail = FALSE)
@@ -72,7 +55,7 @@ test_that("success probability matches manual computation in continuation region
   p_cont <- dbinom(2L, n1, p) * pbinom(2L, 5L, p, lower.tail = FALSE) +
             dbinom(3L, n1, p) * pbinom(1L, 5L, p, lower.tail = FALSE)
   expected <- p_eff1 + p_cont
-  expect_equal(d$alpha_actual, expected, tolerance = 1e-12)
+  expect_equal(d$p_success, expected, tolerance = 1e-12)
 })
 
 # ---------------------------------------------------------------------------
@@ -284,52 +267,43 @@ test_that("admissible_designs with simon=TRUE returns valid output with design_t
 })
 
 # ---------------------------------------------------------------------------
-# twostage-curve.R — twostage_evaluate_design_curve
+# twostage-design.R — twostage_evaluate_design (vector p)
 # ---------------------------------------------------------------------------
-
-test_that("evaluate_design_curve is consistent with evaluate_design at p0 and p1", {
-  n1 <- 10L; n <- 20L; r1 <- 2L; e1 <- 7L; r <- 6L
-  p0 <- 0.1; p1 <- 0.3
-  d   <- twostage_evaluate_design(n1, n, r1, e1, r, p0 = p0, p1 = p1)
-  crv <- twostage_evaluate_design_curve(n1, n, r1, e1, r, p = c(p0, p1))
-  expect_equal(crv$p_success[1], d$alpha_actual, tolerance = 1e-12)
-  expect_equal(crv$en[1],        d$en_null,      tolerance = 1e-12)
-  expect_equal(crv$p_success[2], d$power_actual, tolerance = 1e-12)
-  expect_equal(crv$en[2],        d$en_alt,       tolerance = 1e-12)
-})
 
 test_that("p_efficacy1 is 0 when e1 = n1 + 1 (no interim efficacy stop)", {
   n1 <- 10L; n <- 20L; r1 <- 2L; r <- 6L
-  crv <- twostage_evaluate_design_curve(n1, n, r1, e1 = n1 + 1L, r, p = seq(0.1, 0.9, by = 0.1))
+  crv <- twostage_evaluate_design(n1, n, r1, e1 = n1 + 1L, r,
+                                  p = seq(0.1, 0.9, by = 0.1))
   expect_equal(crv$p_efficacy1, rep(0, nrow(crv)), tolerance = 1e-15)
 })
 
 test_that("p_futility is 0 when r1 = -1 (no futility stop)", {
   n1 <- 10L; n <- 20L; e1 <- 7L; r <- 6L
-  crv <- twostage_evaluate_design_curve(n1, n, r1 = -1L, e1, r, p = seq(0.1, 0.9, by = 0.1))
+  crv <- twostage_evaluate_design(n1, n, r1 = -1L, e1, r,
+                                  p = seq(0.1, 0.9, by = 0.1))
   expect_equal(crv$p_futility, rep(0, nrow(crv)), tolerance = 1e-15)
 })
 
 test_that("en equals n1 + n2 * P(continue to stage 2)", {
   n1 <- 10L; n <- 20L; r1 <- 2L; e1 <- 7L; r <- 6L
   p  <- seq(0.05, 0.95, by = 0.05)
-  crv <- twostage_evaluate_design_curve(n1, n, r1, e1, r, p)
+  crv <- twostage_evaluate_design(n1, n, r1, e1, r, p)
   n2  <- n - n1
   p_cont <- 1 - crv$p_futility - crv$p_efficacy1
   expected_en <- n1 + n2 * p_cont
   expect_equal(crv$en, expected_en, tolerance = 1e-12)
 })
 
-test_that("evaluate_design_curve output has correct dimensions and column names", {
+test_that("evaluate_design output has correct dimensions and column names", {
   p   <- seq(0.1, 0.5, by = 0.1)
-  crv <- twostage_evaluate_design_curve(10L, 20L, 2L, 7L, 6L, p)
+  crv <- twostage_evaluate_design(10L, 20L, 2L, 7L, 6L, p)
   expect_s3_class(crv, "data.frame")
   expect_equal(nrow(crv), length(p))
   expect_equal(names(crv), c("p", "p_success", "p_futility", "p_efficacy1", "en"))
 })
 
-test_that("evaluate_design_curve with empty p vector returns zero-row data.frame", {
-  crv <- twostage_evaluate_design_curve(10L, 20L, 2L, 7L, 6L, p = numeric(0))
+test_that("evaluate_design with empty p vector returns zero-row data.frame", {
+  crv <- twostage_evaluate_design(10L, 20L, 2L, 7L, 6L, p = numeric(0))
   expect_s3_class(crv, "data.frame")
   expect_equal(nrow(crv), 0L)
   expect_equal(names(crv), c("p", "p_success", "p_futility", "p_efficacy1", "en"))

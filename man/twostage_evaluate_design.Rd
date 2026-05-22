@@ -2,63 +2,43 @@
 % Please edit documentation in R/twostage-design.R
 \name{twostage_evaluate_design}
 \alias{twostage_evaluate_design}
-\title{Evaluate operating characteristics of a two-stage design}
+\title{Operating characteristic curve for a two-stage design}
 \usage{
-twostage_evaluate_design(n1, n, r1, e1, r, p0, p1)
+twostage_evaluate_design(n1, n, r1, e1, r, p)
 }
 \arguments{
-\item{n1}{Integer. Stage-1 sample size.}
+\item{n1}{Stage-1 sample size.}
 
-\item{n}{Integer. Total sample size (n1 + n2).}
+\item{n}{Total sample size (\code{n > n1}).}
 
-\item{r1}{Integer. Futility boundary; stop if X1 <= r1. Use -1 for no
-futility stopping.}
+\item{r1}{Futility boundary: stop for futility if \eqn{X_1 \le r_1}
+(\code{-1} = no futility stop).}
 
-\item{e1}{Integer. Interim efficacy boundary; declare success if X1 >= e1.
-Use n1 + 1 for no interim efficacy stopping.}
+\item{e1}{Interim efficacy boundary: declare success if \eqn{X_1 \ge e_1}
+(\code{n1 + 1} = no interim efficacy stop).}
 
-\item{r}{Integer. Final success threshold; success if X1 + X2 >= r.}
+\item{r}{Final success threshold: success if \eqn{X_1 + X_2 \ge r}.}
 
-\item{p0}{Numeric in (0, 1). Null response rate.}
-
-\item{p1}{Numeric in (0, 1). Alternative response rate (p1 > p0).}
+\item{p}{Numeric vector of response probabilities in \eqn{(0, 1)}.}
 }
 \value{
-A named list with elements:
+A \code{data.frame} with one row per element of \code{p} and columns:
 \describe{
-\item{n1, n, n2, r1, e1, r, p0, p1}{Design parameters (n2 = n - n1).}
-\item{alpha_actual}{Achieved type I error under p0.}
-\item{power_actual}{Achieved power under p1.}
-\item{en_null}{Expected sample size under p0.}
-\item{en_alt}{Expected sample size under p1.}
-\item{is_irrevocable}{Logical; TRUE when e1 >= r.}
+\item{p}{Response probability.}
+\item{p_success}{Probability of trial success (early efficacy or
+\eqn{X_1 + X_2 \ge r}).}
+\item{p_futility}{Probability of early stopping for futility
+(\eqn{X_1 \le r_1}).}
+\item{p_efficacy1}{Probability of early stopping for efficacy at the
+interim analysis (\eqn{X_1 \ge e_1}).}
+\item{en}{Expected sample size.}
 }
 }
 \description{
-Computes type I error, power, and expected sample sizes under the null and
-alternative hypotheses for a candidate two-stage single-arm design with a
-binary endpoint.
-}
-\details{
-Decision rules:
-\itemize{
-\item \strong{Stage 1} (X1 ~ Binomial(n1, p)):
-\itemize{
-\item X1 <= r1: stop for futility (\code{r1 = -1} disables futility stopping).
-\item X1 >= e1: declare efficacy (\code{e1 = n1 + 1} disables interim efficacy stop).
-\item Otherwise: continue to stage 2.
-}
-\item \strong{Stage 2} (X2 ~ Binomial(n2, p), independent of X1):
-\itemize{
-\item X1 + X2 >= r: declare success.
-}
-}
-
-The irrevocability constraint \code{e1 >= r} guarantees that interim efficacy
-cannot be overturned by stage 2 (worst case X2 = 0 still gives
-X1 + X2 >= e1 >= r).
+Evaluates the operating characteristics of a two-stage design at each
+element of a user-supplied vector of response probabilities \code{p}.
 }
 \examples{
 twostage_evaluate_design(n1 = 15L, n = 25L, r1 = 0L, e1 = 9L, r = 5L,
-                         p0 = 0.10, p1 = 0.30)
+                         p = seq(0.05, 0.50, by = 0.05))
 }
