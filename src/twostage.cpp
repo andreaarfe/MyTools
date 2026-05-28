@@ -85,10 +85,10 @@ static inline void oc_full(int n1, int n2, int r1, int e1, int r,
 DataFrame find_feasible_designs_cpp(double p0, double p1,
                                     double alpha, double power,
                                     int n_max, int n1_min,
-                                    bool irrevocable, bool simon) {
+                                    bool non_binding, bool simon) {
   std::vector<int>    out_n1, out_n, out_n2, out_r1, out_e1, out_r;
   std::vector<double> out_alpha, out_power, out_en0, out_en1;
-  std::vector<int>    out_is_irrev;
+  std::vector<int>    out_is_nonbind;
 
   // Reusable PMF buffers, sized to the largest n1 we'll see.
   std::vector<double> pmf0(n_max + 1), pmf1(n_max + 1);
@@ -118,9 +118,9 @@ DataFrame find_feasible_designs_cpp(double p0, double p1,
 
       for (int r = 0; r <= n; ++r) {
         if (r == 0) continue;
-        if (!simon && irrevocable && r > n1) continue;
+        if (!simon && non_binding && r > n1) continue;
 
-        int e1_min = simon ? n1 + 1 : (irrevocable ? r : 0);
+        int e1_min = simon ? n1 + 1 : (non_binding ? r : 0);
         for (int e1 = e1_min; e1 <= n1 + 1; ++e1) {
           for (int r1 = -1; r1 <= e1 - 1; ++r1) {
             double alpha_actual, en_null, power_actual, en_alt;
@@ -139,7 +139,7 @@ DataFrame find_feasible_designs_cpp(double p0, double p1,
             out_power.push_back(power_actual);
             out_en0.push_back(en_null);
             out_en1.push_back(en_alt);
-            out_is_irrev.push_back(e1 >= r ? 1 : 0);
+            out_is_nonbind.push_back(e1 >= r ? 1 : 0);
           }
         }
       }
@@ -153,8 +153,8 @@ DataFrame find_feasible_designs_cpp(double p0, double p1,
 
   // Build p0/p1 columns (constant)
   NumericVector p0v(m, p0), p1v(m, p1);
-  LogicalVector is_irrev(m);
-  for (int i = 0; i < m; ++i) is_irrev[i] = (bool)out_is_irrev[i];
+  LogicalVector is_non_binding(m);
+  for (int i = 0; i < m; ++i) is_non_binding[i] = (bool)out_is_nonbind[i];
 
   return DataFrame::create(
     _["n1"]             = out_n1,
@@ -169,7 +169,7 @@ DataFrame find_feasible_designs_cpp(double p0, double p1,
     _["power_actual"]   = out_power,
     _["en_null"]        = out_en0,
     _["en_alt"]         = out_en1,
-    _["is_irrevocable"] = is_irrev,
+    _["is_non_binding"] = is_non_binding,
     _["stringsAsFactors"] = false
   );
 }

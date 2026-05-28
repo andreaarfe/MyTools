@@ -11,7 +11,7 @@ twostage_find_feasible_designs(
   power,
   n_max = 50L,
   n1_min = 1L,
-  irrevocable = FALSE,
+  non_binding = FALSE,
   simon = FALSE
 )
 }
@@ -24,7 +24,7 @@ twostage_find_feasible_designs(
 
 \item{n1_min}{Integer. Minimum stage-1 sample size (default 1).}
 
-\item{irrevocable}{Logical. If \code{TRUE}, restrict to designs with \code{e1 >= r}.}
+\item{non_binding}{Logical. If \code{TRUE}, restrict to designs with \code{e1 >= r}.}
 
 \item{simon}{Logical. If \code{TRUE}, restrict to Simon designs (\code{e1 = n1 + 1},
 no interim efficacy stop).}
@@ -32,7 +32,7 @@ no interim efficacy stop).}
 \value{
 A \code{data.frame} with one row per feasible design and columns
 \code{n}, \code{n1}, \code{n2}, \code{r1}, \code{e1}, \code{r}, \code{alpha_actual}, \code{power_actual},
-\code{en_null}, \code{en_alt}, \code{is_irrevocable}. Returns an empty \code{data.frame}
+\code{en_null}, \code{en_alt}, \code{is_non_binding}. Returns an empty \code{data.frame}
 (with a message) when no designs are found.
 }
 \description{

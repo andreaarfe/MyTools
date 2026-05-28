@@ -11,8 +11,8 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // find_feasible_designs_cpp
-DataFrame find_feasible_designs_cpp(double p0, double p1, double alpha, double power, int n_max, int n1_min, bool irrevocable, bool simon);
-RcppExport SEXP _MyTools_find_feasible_designs_cpp(SEXP p0SEXP, SEXP p1SEXP, SEXP alphaSEXP, SEXP powerSEXP, SEXP n_maxSEXP, SEXP n1_minSEXP, SEXP irrevocableSEXP, SEXP simonSEXP) {
+DataFrame find_feasible_designs_cpp(double p0, double p1, double alpha, double power, int n_max, int n1_min, bool non_binding, bool simon);
+RcppExport SEXP _MyTools_find_feasible_designs_cpp(SEXP p0SEXP, SEXP p1SEXP, SEXP alphaSEXP, SEXP powerSEXP, SEXP n_maxSEXP, SEXP n1_minSEXP, SEXP non_bindingSEXP, SEXP simonSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -22,9 +22,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< double >::type power(powerSEXP);
     Rcpp::traits::input_parameter< int >::type n_max(n_maxSEXP);
     Rcpp::traits::input_parameter< int >::type n1_min(n1_minSEXP);
-    Rcpp::traits::input_parameter< bool >::type irrevocable(irrevocableSEXP);
+    Rcpp::traits::input_parameter< bool >::type non_binding(non_bindingSEXP);
     Rcpp::traits::input_parameter< bool >::type simon(simonSEXP);
-    rcpp_result_gen = Rcpp::wrap(find_feasible_designs_cpp(p0, p1, alpha, power, n_max, n1_min, irrevocable, simon));
+    rcpp_result_gen = Rcpp::wrap(find_feasible_designs_cpp(p0, p1, alpha, power, n_max, n1_min, non_binding, simon));
     return rcpp_result_gen;
 END_RCPP
 }

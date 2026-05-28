@@ -11,7 +11,7 @@ twostage_admissible_designs(
   power,
   n_max = 50L,
   n1_min = 1L,
-  irrevocable = FALSE,
+  non_binding = FALSE,
   simon = FALSE
 )
 }
@@ -28,7 +28,7 @@ twostage_admissible_designs(
 
 \item{n1_min}{Integer. Minimum stage-1 sample size (default 1).}
 
-\item{irrevocable}{Logical. If \code{TRUE}, restrict to designs where \code{e1 >= r},
+\item{non_binding}{Logical. If \code{TRUE}, restrict to designs where \code{e1 >= r},
 so that an interim efficacy declaration cannot be overturned at the final
 analysis. Use \code{TRUE} when the interim efficacy stopping rule is
 \strong{non-binding} (the trial may continue to stage 2 even after \code{X1 >= e1}),
@@ -37,24 +37,28 @@ Default \code{FALSE}.}
 
 \item{simon}{Logical. If \code{TRUE}, restrict to Simon two-stage designs,
 i.e. designs with no interim stopping for efficacy (\code{e1 = n1 + 1}).
-Default \code{FALSE}. When \code{simon = TRUE} the \code{irrevocable} argument has no
+Default \code{FALSE}. When \code{simon = TRUE} the \code{non_binding} argument has no
 effect: because there is no interim efficacy declaration, the
-irrevocability constraint is vacuously satisfied regardless of \code{r}.}
+\code{e1 >= r} constraint is vacuously satisfied regardless of \code{r}.}
 }
 \value{
 A \code{data.frame} with one row per admissible design and columns
 \code{n}, \code{n1}, \code{n2}, \code{r1}, \code{e1}, \code{r}, \code{alpha_actual},
-\code{power_actual}, \code{en_null}, \code{en_alt}, \code{is_irrevocable}, and \code{design_type}.
+\code{power_actual}, \code{en_null}, \code{en_alt}, \code{is_non_binding}, and \code{design_type}.
 The \code{design_type} column is a character vector with values:
 \describe{
 \item{\code{"minimax"}}{The admissible design with the smallest \code{n}
 (ties broken by \code{en_null}).}
-\item{\code{"optimal"}}{The admissible design with the smallest \code{en_null}
+\item{\code{"optimal null"}}{The admissible design with the smallest \code{en_null}
 (ties broken by \code{n}).}
-\item{\code{"minimax, optimal"}}{A design that is simultaneously minimax and
-optimal.}
+\item{\code{"optimal alt"}}{The admissible design with the smallest \code{en_alt}
+(ties broken by \code{n}).}
+\item{\code{"optimal mean"}}{The admissible design with the smallest
+\code{0.5 * (en_null + en_alt)} (ties broken by \code{n}).}
 \item{\code{""}}{All other admissible designs.}
 }
+A design satisfying several criteria carries a comma-joined label
+(e.g. \code{"minimax, optimal null"}).
 Returns an empty \code{data.frame} when no feasible designs are found.
 }
 \description{
@@ -62,8 +66,11 @@ Combines \code{\link[=twostage_find_feasible_designs]{twostage_find_feasible_des
 \code{\link[=twostage_find_admissible_designs]{twostage_find_admissible_designs()}} into a single call. Returns the
 Pareto-optimal designs on three criteria —
 maximum sample size (\code{n}), expected sample size under the null (\code{en_null}),
-and expected sample size under the alternative (\code{en_alt}) — and labels the
-\strong{minimax} (minimum \code{n}) and \strong{optimal} (minimum \code{en_null}) designs.
+and expected sample size under the alternative (\code{en_alt}) — and labels four
+designs of interest: the \strong{minimax} (minimum \code{n}), the
+\strong{optimal null} (minimum \code{en_null}), the \strong{optimal alt}
+(minimum \code{en_alt}), and the \strong{optimal mean}
+(minimum \code{0.5 * (en_null + en_alt)}) designs.
 }
 \examples{
 twostage_admissible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,

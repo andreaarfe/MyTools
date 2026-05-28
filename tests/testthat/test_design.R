@@ -62,37 +62,37 @@ test_that("success probability matches manual computation in continuation region
 # twostage-search.R — MyTools:::twostage_find_feasible_designs
 # ---------------------------------------------------------------------------
 
-test_that("all returned designs satisfy constraints (irrevocable = TRUE)", {
+test_that("all returned designs satisfy constraints (non_binding = TRUE)", {
   alpha <- 0.05; pw <- 0.80
   feasible <- MyTools:::twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = alpha,
                                     power = pw, n_max = 25L,
-                                    irrevocable = TRUE)
+                                    non_binding = TRUE)
   expect_gt(nrow(feasible), 0)
   expect_true(all(feasible$alpha_actual <= alpha + 1e-9))
   expect_true(all(feasible$power_actual >= pw     - 1e-9))
-  expect_true(all(feasible$is_irrevocable))
+  expect_true(all(feasible$is_non_binding))
   expect_true(all(feasible$r1 < feasible$e1))
 })
 
-test_that("irrevocable=FALSE returns designs with e1 < r", {
+test_that("non_binding=FALSE returns designs with e1 < r", {
   feasible <- MyTools:::twostage_find_feasible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                     power = 0.80, n_max = 25L,
-                                    irrevocable = FALSE)
+                                    non_binding = FALSE)
   expect_gt(nrow(feasible), 0)
-  # Must include at least some non-irrevocable designs
-  expect_true(any(!feasible$is_irrevocable))
+  # Must include at least some designs that are not non-binding
+  expect_true(any(!feasible$is_non_binding))
   # Error and power constraints still hold
   expect_true(all(feasible$alpha_actual <= 0.05 + 1e-9))
   expect_true(all(feasible$power_actual >= 0.80 - 1e-9))
 })
 
-test_that("irrevocable=TRUE is a subset of irrevocable=FALSE", {
+test_that("non_binding=TRUE is a subset of non_binding=FALSE", {
   args <- list(p0 = 0.1, p1 = 0.3, alpha = 0.05, power = 0.80, n_max = 20L)
-  f_irrev  <- do.call(MyTools:::twostage_find_feasible_designs, c(args, irrevocable = TRUE))
-  f_all    <- do.call(MyTools:::twostage_find_feasible_designs, c(args, irrevocable = FALSE))
+  f_nb   <- do.call(MyTools:::twostage_find_feasible_designs, c(args, non_binding = TRUE))
+  f_all  <- do.call(MyTools:::twostage_find_feasible_designs, c(args, non_binding = FALSE))
   keys <- function(d) paste(d$n1, d$n, d$r1, d$e1, d$r)
-  expect_true(all(keys(f_irrev) %in% keys(f_all)))
-  expect_lte(nrow(f_irrev), nrow(f_all))
+  expect_true(all(keys(f_nb) %in% keys(f_all)))
+  expect_lte(nrow(f_nb), nrow(f_all))
 })
 
 # ---------------------------------------------------------------------------
@@ -136,7 +136,7 @@ test_that("admissible set from synthetic designs has correct Pareto frontier", {
     data.frame(n1=10, n=20, n2=10, r1=2, e1=8, r=8,
                p0=0.1, p1=0.3,
                alpha_actual=0.04, power_actual=0.82,
-               en_null=en0, en_alt=en1, is_irrevocable=TRUE)
+               en_null=en0, en_alt=en1, is_non_binding=TRUE)
   }
   designs <- rbind(make_row(15, 12),   # D1 — dominated by D2
                    make_row(14, 11),   # D2 — dominates D1
@@ -153,7 +153,7 @@ test_that("identical (n, en_null, en_alt) triples are all retained", {
     data.frame(n1=10, n=20, n2=10, r1=2, e1=8, r=8,
                p0=0.1, p1=0.3,
                alpha_actual=0.04, power_actual=0.82,
-               en_null=14, en_alt=12, is_irrevocable=TRUE)
+               en_null=14, en_alt=12, is_non_binding=TRUE)
   }
   designs <- rbind(make_row(), make_row())
   adm <- MyTools:::twostage_find_admissible_designs(designs)
@@ -165,7 +165,7 @@ test_that("identical triples kept; a dominator eliminates all copies", {
     data.frame(n1=10, n=20, n2=10, r1=2, e1=8, r=8,
                p0=0.1, p1=0.3,
                alpha_actual=0.04, power_actual=0.82,
-               en_null=en0, en_alt=en1, is_irrevocable=TRUE)
+               en_null=en0, en_alt=en1, is_non_binding=TRUE)
   }
   designs <- rbind(make_row(15, 12),  # dominated, copy 1
                    make_row(15, 12),  # dominated, copy 2
@@ -183,7 +183,7 @@ test_that("3D admissible set retains designs with small n even if worse on EN ax
     data.frame(n1=10, n=n, n2=n-10L, r1=2, e1=8, r=8,
                p0=0.1, p1=0.3,
                alpha_actual=0.04, power_actual=0.82,
-               en_null=en0, en_alt=en1, is_irrevocable=TRUE)
+               en_null=en0, en_alt=en1, is_non_binding=TRUE)
   }
   designs <- rbind(make_row(18, 15, 14),  # D1 — small n, worse EN axes
                    make_row(25, 13, 12))  # D2 — large n, better EN axes
@@ -201,39 +201,56 @@ test_that("admissible_designs returns a data.frame with design_type column", {
   expect_s3_class(result, "data.frame")
   expect_gt(nrow(result), 0)
   expect_true("design_type" %in% names(result))
-  expect_true(all(result$design_type %in% c("minimax", "optimal",
-                                             "minimax, optimal", "")))
+  tokens <- unlist(strsplit(result$design_type, ", "))
+  tokens <- tokens[tokens != ""]
+  expect_true(all(tokens %in% c("minimax", "optimal null",
+                                "optimal alt", "optimal mean")))
 })
 
-test_that("exactly one minimax and one optimal label in admissible_designs output", {
+test_that("exactly one of each design_type label in admissible_designs output", {
   result <- twostage_admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                power = 0.80, n_max = 25L)
-  mm_rows  <- grepl("minimax", result$design_type)
-  opt_rows <- grepl("optimal", result$design_type)
-  expect_equal(sum(mm_rows),  1L)
-  expect_equal(sum(opt_rows), 1L)
+  expect_equal(sum(grepl("minimax", result$design_type, fixed = TRUE)), 1L)
+  expect_equal(sum(grepl("optimal null", result$design_type, fixed = TRUE)), 1L)
+  expect_equal(sum(grepl("optimal alt", result$design_type, fixed = TRUE)), 1L)
+  expect_equal(sum(grepl("optimal mean", result$design_type, fixed = TRUE)), 1L)
 })
 
 test_that("minimax design has the smallest n in the admissible set", {
   result <- twostage_admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                power = 0.80, n_max = 25L)
-  mm_n <- result$n[grepl("minimax", result$design_type)]
+  mm_n <- result$n[grepl("minimax", result$design_type, fixed = TRUE)]
   expect_true(all(mm_n <= result$n))
 })
 
-test_that("optimal design has the smallest en_null in the admissible set", {
+test_that("optimal null design has the smallest en_null in the admissible set", {
   result <- twostage_admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                power = 0.80, n_max = 25L)
-  opt_en <- result$en_null[grepl("optimal", result$design_type)]
+  opt_en <- result$en_null[grepl("optimal null", result$design_type, fixed = TRUE)]
   expect_true(all(opt_en <= result$en_null))
 })
 
-test_that("admissible_designs with irrevocable=FALSE includes non-irrevocable designs", {
+test_that("optimal alt design has the smallest en_alt in the admissible set", {
+  result <- twostage_admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+                               power = 0.80, n_max = 25L)
+  opt_en <- result$en_alt[grepl("optimal alt", result$design_type, fixed = TRUE)]
+  expect_true(all(opt_en <= result$en_alt))
+})
+
+test_that("optimal mean design has the smallest mean EN in the admissible set", {
+  result <- twostage_admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
+                               power = 0.80, n_max = 25L)
+  en_mean <- 0.5 * (result$en_null + result$en_alt)
+  opt_mean <- en_mean[grepl("optimal mean", result$design_type, fixed = TRUE)]
+  expect_true(all(opt_mean <= en_mean))
+})
+
+test_that("admissible_designs with non_binding=FALSE includes designs that are not non-binding", {
   result <- twostage_admissible_designs(p0 = 0.1, p1 = 0.3, alpha = 0.05,
                                power = 0.80, n_max = 25L,
-                               irrevocable = FALSE)
+                               non_binding = FALSE)
   expect_gt(nrow(result), 0)
-  expect_true(any(!result$is_irrevocable))
+  expect_true(any(!result$is_non_binding))
 })
 
 # ---------------------------------------------------------------------------
@@ -250,8 +267,8 @@ test_that("simon=TRUE returns only designs with e1 = n1 + 1", {
 test_that("simon=TRUE designs are a subset of all feasible designs", {
   args <- list(p0 = 0.1, p1 = 0.3, alpha = 0.05, power = 0.80, n_max = 20L)
   f_simon <- do.call(MyTools:::twostage_find_feasible_designs, c(args, simon = TRUE,
-                                              irrevocable = FALSE))
-  f_all   <- do.call(MyTools:::twostage_find_feasible_designs, c(args, irrevocable = FALSE))
+                                              non_binding = FALSE))
+  f_all   <- do.call(MyTools:::twostage_find_feasible_designs, c(args, non_binding = FALSE))
   keys <- function(d) paste(d$n1, d$n, d$r1, d$e1, d$r)
   expect_true(all(keys(f_simon) %in% keys(f_all)))
   expect_lte(nrow(f_simon), nrow(f_all))

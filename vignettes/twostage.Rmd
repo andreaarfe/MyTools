@@ -35,7 +35,7 @@ Each design is defined by five integers $(n_1, n, r_1, e_1, r)$:
 | $e_1$ | Interim efficacy boundary: declare success if $X_1 \ge e_1$ ($n_1+1$ = no interim efficacy stop) |
 | $r$ | Final success threshold: declare success if $X_1 + X_2 \ge r$ |
 
-By default no irrevocability constraint is applied. Pass `irrevocable = TRUE`
+By default no $e_1 \ge r$ constraint is applied. Pass `non_binding = TRUE`
 to restrict to designs where $e_1 \ge r$, guaranteeing that once interim
 efficacy is declared no stage-2 outcome can overturn it (worst case $X_2 = 0$
 still gives $X_1 + X_2 \ge e_1 \ge r$). This is appropriate when the interim
@@ -59,9 +59,11 @@ n_max <- 40L
 `twostage_admissible_designs()` performs an exhaustive search and returns
 the Pareto-optimal designs on three criteria simultaneously: maximum sample
 size ($n$), expected sample size under the null ($EN_0$), and expected
-sample size under the alternative ($EN_1$). The **minimax** (minimum $n$)
-and **optimal** (minimum $EN_0$) designs are flagged in the `design_type`
-column.
+sample size under the alternative ($EN_1$). Four designs of interest are
+flagged in the `design_type` column: the **minimax** (minimum $n$), the
+**optimal null** (minimum $EN_0$), the **optimal alt** (minimum $EN_1$), and
+the **optimal mean** (minimum $\tfrac{1}{2}(EN_0 + EN_1)$) designs. A design
+meeting several criteria carries a comma-joined label.
 
 ```{r admissible}
 result <- twostage_admissible_designs(p0, p1, alpha, power, n_max)
@@ -87,40 +89,54 @@ improvement.
 
 - The **minimax** design minimises the maximum sample size $n$ — useful when
   the budget is fixed and worst-case enrolment is the binding constraint.
-- The **optimal** design minimises $EN_0$ — useful when the null hypothesis is
-  expected to hold (the drug is inactive) and early stopping is the priority.
+- The **optimal null** design minimises $EN_0$ — useful when the null hypothesis
+  is expected to hold (the drug is inactive) and early stopping is the priority.
+- The **optimal alt** design minimises $EN_1$ — useful when the alternative is
+  expected to hold and the priority is small expected size under activity.
+- The **optimal mean** design minimises the average $\tfrac{1}{2}(EN_0 + EN_1)$ —
+  a compromise that does not commit to either hypothesis being true.
 - Other admissible designs represent different trade-offs between the three
   criteria.
 
-```{r pareto-plot, fig.width = 5.5, fig.height = 4, fig.alt = "Scatter plot of EN_null vs EN_alt for admissible designs, with minimax and optimal labelled"}
-col <- ifelse(result$design_type == "", "steelblue",
-       ifelse(result$design_type == "minimax", "firebrick", "darkgreen"))
-pch <- ifelse(result$design_type == "", 19, 17)
-
+```{r pareto-plot, fig.width = 5.5, fig.height = 4, fig.alt = "Scatter plot of EN_null vs EN_alt for admissible designs, with minimax and the three optimal designs labelled"}
 plot(result$en_null, result$en_alt,
      xlab = expression(EN[0] ~ "(under null)"),
      ylab = expression(EN[1] ~ "(under alternative)"),
      main = "Pareto frontier of admissible designs",
-     pch  = pch, col = col, cex = 1.2)
+     pch  = 19, col = "steelblue", cex = 1.2)
+
+highlights <- list(
+  c(label = "minimax",      col = "firebrick", pch = "17"),
+  c(label = "optimal null", col = "darkgreen", pch = "15"),
+  c(label = "optimal alt",  col = "darkorange", pch = "18"),
+  c(label = "optimal mean", col = "purple",    pch = "8"))
+for (h in highlights) {
+  sel <- grepl(h[["label"]], result$design_type, fixed = TRUE)
+  points(result$en_null[sel], result$en_alt[sel],
+         col = h[["col"]], pch = as.integer(h[["pch"]]), cex = 1.6)
+}
 legend("topright",
-       legend = c("admissible", "minimax", "optimal"),
-       pch    = c(19, 17, 17),
-       col    = c("steelblue", "firebrick", "darkgreen"),
+       legend = c("admissible", "minimax", "optimal null",
+                  "optimal alt", "optimal mean"),
+       pch    = c(19, 17, 15, 18, 8),
+       col    = c("steelblue", "firebrick", "darkgreen",
+                  "darkorange", "purple"),
        bty    = "n")
 ```
 
-## Restricting to irrevocable designs
+## Restricting to non-binding designs
 
-Set `irrevocable = TRUE` to restrict to designs where the interim efficacy
-declaration cannot be overturned at the final analysis ($e_1 \ge r$). The
-`is_irrevocable` column indicates which designs satisfy this constraint.
+Set `non_binding = TRUE` to restrict to designs where the interim efficacy
+declaration cannot be overturned at the final analysis ($e_1 \ge r$). This is
+the relevant class when the interim efficacy stopping rule is **non-binding**.
+The `is_non_binding` column indicates which designs satisfy this constraint.
 
-```{r irrev-true}
-result_irrev <- twostage_admissible_designs(p0, p1, alpha, power, n_max,
-                                            irrevocable = TRUE)
-cat(sprintf("%d admissible designs total, %d irrevocable\n",
-            nrow(result), sum(result$is_irrevocable)))
-cat(sprintf("%d admissible irrevocable designs\n", nrow(result_irrev)))
+```{r nonbind-true}
+result_nb <- twostage_admissible_designs(p0, p1, alpha, power, n_max,
+                                         non_binding = TRUE)
+cat(sprintf("%d admissible designs total, %d non-binding\n",
+            nrow(result), sum(result$is_non_binding)))
+cat(sprintf("%d admissible non-binding designs\n", nrow(result_nb)))
 ```
 
 ## Restricting to Simon two-stage designs
@@ -131,8 +147,8 @@ In the package's parameterisation this means $e_1 = n_1 + 1$ (the disabled
 sentinel value). Pass `simon = TRUE` to restrict the search to this class.
 
 Because Simon designs never make an interim efficacy declaration, the
-irrevocability constraint ($e_1 \ge r$) is vacuously satisfied for any $r$,
-so the `irrevocable` argument has no effect when `simon = TRUE`.
+$e_1 \ge r$ constraint is vacuously satisfied for any $r$, so the
+`non_binding` argument has no effect when `simon = TRUE`.
 
 ```{r simon}
 simon_result <- twostage_admissible_designs(p0, p1, alpha, power, n_max,
