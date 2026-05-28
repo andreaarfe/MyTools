@@ -203,7 +203,8 @@ test_that("admissible_designs returns a data.frame with design_type column", {
   expect_true("design_type" %in% names(result))
   tokens <- unlist(strsplit(result$design_type, ", "))
   tokens <- tokens[tokens != ""]
-  expect_true(all(tokens %in% c("minimax", "optimal null",
+  expect_true(all(tokens %in% c("minimax", "min en_null", "min en_alt",
+                                "min en_mean", "optimal null",
                                 "optimal alt", "optimal mean")))
 })
 

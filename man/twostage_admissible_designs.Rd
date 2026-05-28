@@ -47,8 +47,11 @@ A \code{data.frame} with one row per admissible design and columns
 \code{power_actual}, \code{en_null}, \code{en_alt}, \code{is_non_binding}, and \code{design_type}.
 The \code{design_type} column is a character vector with values:
 \describe{
-\item{\code{"minimax"}}{The admissible design with the smallest \code{n}
-(ties broken by \code{en_null}).}
+\item{\code{"minimax"}}{The admissible design with the uniquely smallest \code{n}.
+When several designs share the minimum \code{n}, the one with the smallest
+\code{en_null} (then \code{en_alt}, then \code{en_mean}) is chosen, and every
+secondary criterion it also wins within that tied set is appended to the label
+(e.g. \code{"minimax, min en_null"}, \code{"minimax, min en_null, min en_alt, min en_mean"}).}
 \item{\code{"optimal null"}}{The admissible design with the smallest \code{en_null}
 (ties broken by \code{n}).}
 \item{\code{"optimal alt"}}{The admissible design with the smallest \code{en_alt}

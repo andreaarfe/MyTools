@@ -32,8 +32,11 @@
 #'   `power_actual`, `en_null`, `en_alt`, `is_non_binding`, and `design_type`.
 #'   The `design_type` column is a character vector with values:
 #'   \describe{
-#'     \item{`"minimax"`}{The admissible design with the smallest `n`
-#'       (ties broken by `en_null`).}
+#'     \item{`"minimax"`}{The admissible design with the uniquely smallest `n`.
+#'       When several designs share the minimum `n`, the one with the smallest
+#'       `en_null` (then `en_alt`, then `en_mean`) is chosen, and every secondary
+#'       criterion it also wins within that tied set is appended to the label
+#'       (e.g. `"minimax, min en_null"`, `"minimax, min en_null, min en_alt, min en_mean"`).}
 #'     \item{`"optimal null"`}{The admissible design with the smallest `en_null`
 #'       (ties broken by `n`).}
 #'     \item{`"optimal alt"`}{The admissible design with the smallest `en_alt`
@@ -61,9 +64,27 @@ twostage_admissible_designs <- function(p0, p1, alpha, power,
   admissible <- twostage_find_admissible_designs(feasible)
   if (nrow(admissible) == 0L) return(admissible)
 
-  # minimax: smallest n, tie-break by en_null
-  mm_idx <- which(admissible$n == min(admissible$n))
-  mm_idx <- mm_idx[which.min(admissible$en_null[mm_idx])]
+  # minimax: smallest n; when tied, narrow sequentially by en_null, en_alt,
+  # en_mean; label reflects every secondary criterion the chosen design wins
+  # within the full minimax candidate set.
+  all_mm   <- which(admissible$n == min(admissible$n))
+  mm_idxs  <- all_mm
+  mm_idxs  <- mm_idxs[admissible$en_null[mm_idxs] == min(admissible$en_null[mm_idxs])]
+  mm_idxs  <- mm_idxs[admissible$en_alt [mm_idxs] == min(admissible$en_alt [mm_idxs])]
+  en_mean_mm <- 0.5 * (admissible$en_null[mm_idxs] + admissible$en_alt[mm_idxs])
+  mm_idxs  <- mm_idxs[en_mean_mm == min(en_mean_mm)]
+  mm_idx   <- mm_idxs[[1L]]
+  mm_parts <- "minimax"
+  if (length(all_mm) > 1L) {
+    en_mean_all <- 0.5 * (admissible$en_null[all_mm] + admissible$en_alt[all_mm])
+    if (admissible$en_null[mm_idx] == min(admissible$en_null[all_mm]))
+      mm_parts <- c(mm_parts, "min en_null")
+    if (admissible$en_alt[mm_idx]  == min(admissible$en_alt[all_mm]))
+      mm_parts <- c(mm_parts, "min en_alt")
+    if (0.5 * (admissible$en_null[mm_idx] + admissible$en_alt[mm_idx]) == min(en_mean_all))
+      mm_parts <- c(mm_parts, "min en_mean")
+  }
+  mm_label <- paste(mm_parts, collapse = ", ")
 
   # optimal null: smallest en_null, tie-break by n
   on_idx <- which(admissible$en_null == min(admissible$en_null))
@@ -79,7 +100,7 @@ twostage_admissible_designs <- function(p0, p1, alpha, power,
   om_idx  <- om_idx[which.min(admissible$n[om_idx])]
 
   labels <- vector("list", nrow(admissible))
-  labels[[mm_idx]] <- c(labels[[mm_idx]], "minimax")
+  labels[[mm_idx]] <- c(labels[[mm_idx]], mm_label)
   labels[[on_idx]] <- c(labels[[on_idx]], "optimal null")
   labels[[oa_idx]] <- c(labels[[oa_idx]], "optimal alt")
   labels[[om_idx]] <- c(labels[[om_idx]], "optimal mean")
