@@ -37,9 +37,24 @@ Rscript -e 'devtools::build_vignettes()'
 **After editing Roxygen comments in any `R/*.R` file** (regenerates `man/*.Rd`):
 ```bash
 Rscript -e 'devtools::document()'
+# or, if devtools is unavailable (e.g. remote web environment):
+Rscript -e 'roxygen2::roxygenise(".")'
 ```
 
-**Documentation rule:** Whenever a function signature or behaviour changes (parameters, defaults, return value), update both the Roxygen comments in the corresponding `R/*.R` file **and** the generated `man/*.Rd` file. Run `devtools::document()` to regenerate `.Rd` files if R is available; otherwise edit `man/*.Rd` by hand to keep them in sync.
+**Documentation rule:** Whenever a function signature or behaviour changes (parameters, defaults, return value), update both the Roxygen comments in the corresponding `R/*.R` file **and** the generated `man/*.Rd` file. Regenerate `.Rd` files with `devtools::document()` (preferred) or `roxygen2::roxygenise(".")` (available via apt as `r-cran-roxygen2`); never edit `man/*.Rd` by hand.
+
+### Remote web environment (Claude Code on the web)
+
+In this environment R 4.3.3 is available via `apt`, but CRAN is unreachable so `devtools` cannot be installed. Use these equivalents:
+
+| devtools command | alternative |
+|---|---|
+| `devtools::test()` | `pkgload::load_all("."); testthat::test_local(".")` |
+| `devtools::load_all()` | `pkgload::load_all(".")` |
+| `devtools::document()` | `roxygen2::roxygenise(".")` |
+| `devtools::check()` | `R CMD build . && R CMD check --as-cran MyTools_*.tar.gz` |
+
+`r-cran-rcpp`, `r-cran-testthat`, `r-cran-pkgload`, and `r-cran-roxygen2` are all apt-packaged and installable with `sudo apt-get install -y`.
 
 **After editing `src/twostage.cpp`** (regenerates R/RcppExports.R and src/RcppExports.cpp):
 ```bash
