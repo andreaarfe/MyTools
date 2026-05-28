@@ -39,7 +39,7 @@ A \code{data.frame} with one row per feasible design and columns
 Exhaustively searches over all combinations of \verb{(n, n1, r, e1, r1)} with
 total sample size up to \code{n_max} and returns designs satisfying
 \code{alpha_actual <= alpha}, \code{power_actual >= power}, \code{r1 < e1}, and (optionally)
-the irrevocability constraint \code{e1 >= r}.
+the constraint \code{e1 >= r} (enabled via \code{non_binding}).
 }
 \details{
 Used internally by \code{\link[=twostage_admissible_designs]{twostage_admissible_designs()}}. Not exported; users

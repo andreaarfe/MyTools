@@ -6,7 +6,7 @@ Authors@R: person("Andrea", "Arfe", email = "andrea.arfe@gmail.com",
 Description: A collection of R utilities for statistical and clinical-trial
     methodology. The current release provides the 'twostage' module, which
     enumerates admissible two-stage single-arm clinical trial designs for a
-    binary endpoint, with optional irrevocability and Simon-design constraints.
+    binary endpoint, with optional non-binding and Simon-design constraints.
 License: MIT + file LICENSE
 Imports:
     Rcpp,

@@ -49,8 +49,8 @@ The \code{design_type} column is a character vector with values:
 \describe{
 \item{\code{"minimax"}}{The admissible design with the uniquely smallest \code{n}.
 When several designs share the minimum \code{n}, the one with the smallest
-\code{en_null} (then \code{en_alt}, then \code{en_mean}) is chosen, and every
-secondary criterion it also wins within that tied set is appended to the label
+\code{en_null} (then \code{en_alt}, then \code{en_mean}) is chosen, and every secondary
+criterion it also wins within that tied set is appended to the label
 (e.g. \code{"minimax, min en_null"}, \code{"minimax, min en_null, min en_alt, min en_mean"}).}
 \item{\code{"optimal null"}}{The admissible design with the smallest \code{en_null}
 (ties broken by \code{n}).}
@@ -70,10 +70,9 @@ Combines \code{\link[=twostage_find_feasible_designs]{twostage_find_feasible_des
 Pareto-optimal designs on three criteria —
 maximum sample size (\code{n}), expected sample size under the null (\code{en_null}),
 and expected sample size under the alternative (\code{en_alt}) — and labels four
-designs of interest: the \strong{minimax} (minimum \code{n}), the
-\strong{optimal null} (minimum \code{en_null}), the \strong{optimal alt}
-(minimum \code{en_alt}), and the \strong{optimal mean}
-(minimum \code{0.5 * (en_null + en_alt)}) designs.
+designs of interest: the \strong{minimax} (minimum \code{n}), the \strong{optimal null}
+(minimum \code{en_null}), the \strong{optimal alt} (minimum \code{en_alt}), and the
+\strong{optimal mean} (minimum \code{0.5 * (en_null + en_alt)}) designs.
 }
 \examples{
 twostage_admissible_designs(p0 = 0.10, p1 = 0.30, alpha = 0.05, power = 0.80,

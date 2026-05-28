@@ -3,7 +3,7 @@
 A collection of R utilities for statistical and clinical-trial methodology.
 The current release provides the **twostage** module (functions prefixed
 `twostage_`), which enumerates admissible two-stage single-arm trial designs
-for a binary endpoint, with optional irrevocability and Simon-design
+for a binary endpoint, with optional non-binding and Simon-design
 constraints.
 
 ## Installation
@@ -27,7 +27,7 @@ vignette("twostage", package = "MyTools")
 ```
 
 The vignette walks through finding admissible designs, interpreting the
-Pareto frontier, and the `irrevocable` and `simon` options.
+Pareto frontier, and the `non_binding` and `simon` options.
 
 ## Modules
 
